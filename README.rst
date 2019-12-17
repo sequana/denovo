@@ -2,7 +2,7 @@ This is is the **denovo** pipeline from the `Sequana <https://sequana.readthedoc
 
 :Overview: a de-novo assembly pipeline for short-read sequencing data
 :Input: A set of FastQ files
-:Output: Fasta, VCF, HTML repor
+:Output: Fasta, VCF, HTML report
 :Status: production
 :Citation: Cokelaer et al, (2017), ‘Sequana’: a Set of Snakemake NGS pipelines, Journal of Open Source Software, 2(16), 352, JOSS DOI doi:10.21105/joss.00352
 
@@ -48,7 +48,7 @@ This pipelines requires the following executable(s):
 - spades
 - busco
 - bwa
-- khmer
+- khmer : there is not executable called kmher but a set of executables (.e.g .normalize-by-median.py)
 - freebayes
 - picard
 - prokka

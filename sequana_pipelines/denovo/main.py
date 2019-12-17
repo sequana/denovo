@@ -35,8 +35,7 @@ class Options(argparse.ArgumentParser):
         """
         )
         super(Options, self).__init__(usage=usage, prog=prog, description="",
-
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
         )
 
         # add a new group of options to the parser
@@ -75,7 +74,11 @@ def main(args=None):
     # fill the config file with input parameters
     cfg = manager.config.config
     # EXAMPLE TOREPLACE WITH YOUR NEEDS
-    cfg.quast.reference = os.path.abspath(options.quast_reference)
+    cfg.input_directory = os.path.abspath(options.input_directory)
+    cfg.input_pattern = options.input_pattern
+
+    if options.quast_reference:
+        cfg.quast.reference = os.path.abspath(options.quast_reference)
     cfg.prokka.kingdom = options.prokka_kingdom
     if options.circular:
         cfg.sequana_coverage.circular = options.circular

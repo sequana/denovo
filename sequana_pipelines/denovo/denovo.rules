@@ -141,7 +141,7 @@ __bwa_mem_assembly__reference = __format_contigs__output
 __bwa_mem_assembly__fai = __bwa_mem_assembly__reference + '.fai'
 __bwa_mem_assembly__bam = manager.getname('bwa_mem_assembly', '.sorted.bam')
 __bwa_mem_assembly__log = manager.getlogdir('bwa_mem_assembly')
-__bwa_index_assembly__log = 'common_logs/bwa_index.log'
+__bwa_index_assembly__log = '{sample}/common_logs/bwa_index.log'
 include: bwa_mem_dynamic('assembly', manager)
 
 # initiate variables
@@ -244,7 +244,7 @@ expected_output.append(expand(__summary_pipeline__json_output,
 # these rules don't need to be submit on a node.
 localrules: conda, rulegraph
 
-rule pipeline_variant:
+rule pipeline_denovo:
     input:
         expected_output
 
@@ -262,7 +262,7 @@ onsuccess:
     sm.add_stats_summary_json(json_list, snake_parser)
 
     # create summary pipeline for each samples
-    report_dir_format = 'report_da_{0}'
+    report_dir_format = 'report_{0}'
     for proj in manager.samples.keys():
         report_dir = report_dir_format.format(proj)
         conf.output_dir = report_dir

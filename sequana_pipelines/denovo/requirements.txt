@@ -1,10 +1,9 @@
-- busco
+- run_busco
 - bwa
-- khmer
 - freebayes
-- picard (picard-tools)
+- picard 
 - prokka
-- quast
+- quast.py
 - spades
 - sambamba
 - samtools
