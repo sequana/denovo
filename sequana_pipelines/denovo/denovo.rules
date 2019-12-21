@@ -37,7 +37,7 @@ configfile: 'config.yaml'
 manager = sm.PipelineManager('denovo', config)
 config = manager.config
 __snakefile__ = srcdir(__snakefile__)
-__report_dir__ = 'report_da_{0}'.format(manager.sample)
+__report_dir__ = 'report_{0}'.format(manager.sample)
 
 __rawdata__input = manager.getrawdata()
 

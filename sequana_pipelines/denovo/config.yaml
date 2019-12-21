@@ -43,7 +43,7 @@ digital_normalisation:
     do: yes
     ksize: 20
     cutoff: 20
-    max_memory_usage: 16e9
+    max_memory_usage: 4e9
     threads: 4
     options: ""
 

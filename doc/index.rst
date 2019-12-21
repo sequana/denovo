@@ -19,6 +19,91 @@ The Sequana denovo pipeline
 
 .. include:: ../README.rst
 
+
+
+
+Rules and configuration details
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here is a documenteted configuration file :download:`../sequana_pipelines/denovo/config.yaml` to be used with the pipeline. Each rule used in the pipeline may have a section in the configuration file. Here are the rules and their developer and user documentation.
+
+*De-novo* assembly
+^^^^^^^^^^^^^^^^^^
+
+
+Digital normalisation
+........................
+
+.. snakemakerule:: digital_normalisation
+
+SPAdes
+......
+
+.. snakemakerule:: spades
+
+Format contigs
+..............
+.. snakemakerule:: format_contigs
+
+Quality assessment metrics
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+QUAST
+.....
+.. snakemakerule:: quast
+
+BUSCO
+.....
+TODO
+
+Genome annotation
+^^^^^^^^^^^^^^^^^
+
+Prokka
+......
+.. snakemakerule:: prokka
+
+Re-mapping
+^^^^^^^^^^
+
+BWA
+...
+
+.. snakemakerule:: bwa_mem_dynamic
+
+Sambamba markdup
+................
+
+.. snakemakerule:: sambamba_markdup
+
+Sambamba filter
+...............
+.. snakemakerule:: sambamba_filter
+
+Mismatch detection
+^^^^^^^^^^^^^^^^^^
+
+Freebayes
+.........
+.. snakemakerule:: freebayes
+
+Freebayes filter
+................
+.. snakemakerule:: freebayes_vcf_filter
+
+Coverage analysis
+^^^^^^^^^^^^^^^^^
+
+Samtools depth
+..............
+.. snakemakerule:: samtools_depth
+
+Sequana coverage
+................
+
+.. snakemakerule:: sequana_coverage
+
 What is Sequana ?
 =====================
 
@@ -38,3 +123,6 @@ To join the project, please let us know on `github <https://github.com/sequana/s
 For more information, please see `github <https://sequana.readthedocs.io>`_.
 
 
+Changelog
+=========
+0.8.1: new options in the main script and more thorough tests

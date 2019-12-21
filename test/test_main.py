@@ -5,7 +5,7 @@ import subprocess
 import sys
 from sequana.pipelines_common import get_pipeline_location as getpath
 
-sharedir = getpath('quality_control')
+sharedir = getpath('denovo')
 
 
 def test_standalone_subprocess():
@@ -29,13 +29,15 @@ def test_full():
         wk = directory
 
         cmd = "sequana_pipelines_denovo --input-directory {} "
-        cmd += "--working-directory {}  --force"
+        cmd += "--working-directory {}  --force "
+        cmd +=" --digital-normalisation-max-memory-usage 1e9"
+        cmd +=" --skip-prokka"
         cmd = cmd.format(sharedir, wk)
         subprocess.call(cmd.split())
 
         stat = subprocess.call("sh denovo.sh".split(), cwd=wk)
 
-        #assert os.path.exists(wk + "/multi_summary.html")
+        assert os.path.exists(wk + "/report_data/summary.html")
 
 def test_version():
     cmd = "sequana_pipelines_denovo --version"

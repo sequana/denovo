@@ -1,7 +1,7 @@
 - run_busco
 - bwa
 - freebayes
-- picard 
+- picard
 - prokka
 - quast.py
 - spades
