@@ -182,13 +182,13 @@ if config['sequana_coverage']['do']:
         __sequana_coverage__gbk = __prokka__gbk
     else:    
         __sequana_coverage__gbk = []
-    __sequana_coverage__csv = manager.getname('sequana_coverage', '.csv')
+    #__sequana_coverage__csv = manager.getname('sequana_coverage', '.csv')
     __sequana_coverage__report_dir = __report_dir__
     __sequana_coverage__html = os.sep.join([
         __report_dir__, 'sequana_coverage.html'
     ])
     include: sm.modules['sequana_coverage']
-    expected_output.append(expand(__sequana_coverage__csv,
+    expected_output.append(expand(__sequana_coverage__html,
                                   sample=manager.samples))
  
 # Variant calling with Freebayes

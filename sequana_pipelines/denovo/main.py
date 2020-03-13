@@ -95,7 +95,7 @@ def main(args=None):
     cfg.input_pattern = options.input_pattern
     cfg.input_readtag = options.input_readtag
 
-    manager.exists(cfg.general.reference_file)
+    #manager.exists(cfg.general.reference_file)
 
     # ---------------------------------------------------- freebayes
     cfg.freebayes.ploidy = options.freebayes_ploidy

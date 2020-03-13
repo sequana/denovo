@@ -1,19 +1,19 @@
 {
     "__default__":
     {
-        "mem": 8000,
+        "ram": "8G",
         "qos": "fast",
         "partition": "-p dedicated"
     },
     "spades":
     {
-        "mem": 64000,
+        "ram": "64G",
         "qos": "normal",
         "partition": ""
     },
     "digital_normalisation":
     {
-        "mem": 64000,
+        "ram": "64G",
         "qos": "normal",
         "partition": ""
     }
