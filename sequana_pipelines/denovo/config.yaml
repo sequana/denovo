@@ -173,12 +173,16 @@ sambamba_filter:
 #
 sequana_coverage:
     do: yes
-    k: 2
+    mixture_models: 2
     circular: no
     window_size: 40001
     low_threshold: -4.0
     high_threshold: 4.0
     gc_window_size: 201
+    double_threshold: 0.5
+    genbank_file: ''
+    reference_file: ''
+
 
 ##############################################################################
 # Freebayes - Variant caller

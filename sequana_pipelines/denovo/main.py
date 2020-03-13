@@ -93,6 +93,9 @@ def main(args=None):
     # EXAMPLE TOREPLACE WITH YOUR NEEDS
     cfg.input_directory = os.path.abspath(options.input_directory)
     cfg.input_pattern = options.input_pattern
+    cfg.input_readtag = options.input_readtag
+
+    manager.exists(cfg.general.reference_file)
 
     # ---------------------------------------------------- freebayes
     cfg.freebayes.ploidy = options.freebayes_ploidy
