@@ -97,3 +97,12 @@ The last approach but not the least is `BUSCO <http://busco.ezlab.org/>`_, that
 provides quantitative measures for the assessment of genome assembly based on
 expectations of gene content from near-universal single-copy orthologs selected
 from `OrthoDB <http://www.orthodb.org/>`_.
+
+
+========= ====================================================================
+Version   Description
+========= ====================================================================
+0.8.2     * fix readtag, update config to account for new coverage setup
+0.8.1     
+0.8.0     **First release.**
+========= ====================================================================
