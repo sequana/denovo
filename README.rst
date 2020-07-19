@@ -102,6 +102,7 @@ from `OrthoDB <http://www.orthodb.org/>`_.
 ========= ====================================================================
 Version   Description
 ========= ====================================================================
+0.8.4     * update pipeline to use new pipetools features
 0.8.3     * fix requirements (spades -> spades.py)
 0.8.2     * fix readtag, update config to account for new coverage setup
 0.8.1     
