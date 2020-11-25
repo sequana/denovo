@@ -9,28 +9,28 @@
 # ============================================================================
 #
 input_directory: "%(input_directory)s"
-input_readtag: "%(input_readtag)s"
-input_pattern: "%(input_pattern)s"
+input_readtag: _R[12]_
+input_pattern: '*fastq.gz'
 
 ##############################################################################
 # Sequencing information section
 #
 # :Parameters:
-# 
+#
 # - platform: name of the technology.
 # - instrument: name of the instrument.
 # - flowcell: name of the flowcell.
 #
 sequencing:
-    platform: "Illumina"
-    instrument: "Unknown"
-    flowcell: "Unknown"
+    platform: Illumina
+    instrument: Unknown
+    flowcell: Unknown
 
 ##############################################################################
 # Khmer - Digital Normalisation
-# 
+#
 # :Parameters:
-# 
+#
 # - do: if unchecked, this rule is ignored.
 # - ksize: kmer size used to normalised the coverage.
 # - cutoff: when the median k-mer coverage level is above this number the read
@@ -38,14 +38,14 @@ sequencing:
 # - max_memory_usage: maximum amount of memory to use for data structure.
 # - threads: number of threads to be used.
 # - options: any options recognised by normalize-by-median.py.
-# 
+#
 digital_normalisation:
     do: yes
     ksize: 20
     cutoff: 20
     max_memory_usage: 4e9
     threads: 4
-    options: ""
+    options: ''
 
 ##############################################################################
 # Spades - De Novo Assembly
@@ -61,11 +61,11 @@ digital_normalisation:
 # 
 spades:
     k: 21,33,55,77,99,127
-    careful: yes
-    only_assembler: no
+    careful: true
+    only_assembler: false
     memory: 64
     threads: 8
-    options: ""
+    options: ''
 
 ##############################################################################
 # Quast - Compute metrics to assess assembly
@@ -79,10 +79,10 @@ spades:
 # - options: Any options recognised by quast.py.
 # 
 quast:
-    reference: ""
-    genes_file: ""
+    reference: ''
+    genes_file: ''
     threads: 4
-    options: ""
+    options: ''
 
 ##############################################################################
 # Prokka - Annotate the genome assembly
@@ -127,10 +127,10 @@ format_contigs:
 # - tmp_directory: temporary directory
 #
 bwa_mem_assembly:
-    index_algorithm: 'is'
-    options: '-T 30'
+    index_algorithm: is
+    options: -T 30
     threads: 4
-    tmp_directory: './tmp/'
+    tmp_directory: ./tmp/
 
 ##############################################################################
 # Sambamba - Marks or removes duplicates
@@ -142,9 +142,9 @@ bwa_mem_assembly:
 # - tmp_directory: set the temporary directory.
 #
 sambamba_markdup:
-    do: yes
-    remove: no
-    tmp_directory: "./tmp/"
+    do: true
+    remove: false
+    tmp_directory: ./tmp/
 
 ##############################################################################
 # Filter reads with a mapping score lower than an integer 
@@ -155,7 +155,7 @@ sambamba_markdup:
 # - threshold: mapping score threshold (between 0 and 60).
 #
 sambamba_filter:
-    do: yes
+    do: true
     threshold: 30
 
 ##############################################################################
@@ -174,7 +174,7 @@ sambamba_filter:
 sequana_coverage:
     do: yes
     mixture_models: 2
-    circular: no
+    circular: false
     window_size: 40001
     chunksize: 5000000
     low_threshold: -4.0
@@ -197,7 +197,7 @@ sequana_coverage:
 freebayes:
     do: yes
     ploidy: 1
-    options:
+    options: ''
 
 ##############################################################################
 # Filter VCF
@@ -218,3 +218,6 @@ freebayes_vcf_filter:
     forward_depth: 3
     reverse_depth: 3
     strand_ratio: 0.2
+
+multiqc:
+    options: "-p -f  "

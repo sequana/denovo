@@ -26,15 +26,12 @@ import os
 
 import sequana
 from sequana import snaketools as sm
-from sequana.snaketools import SequanaConfig
-
-
-sm.init('denovo.rules', globals())
-
 
 # This must be defined before the include
 configfile: 'config.yaml'
 manager = sm.PipelineManager('denovo', config)
+manager.setup(globals(), mode="warning")
+
 config = manager.config
 __snakefile__ = srcdir(__snakefile__)
 __report_dir__ = 'report_{0}'.format(manager.sample)
@@ -241,6 +238,12 @@ include: sm.modules['summary_pipeline']
 expected_output.append(expand(__summary_pipeline__json_output,
                               sample=manager.samples))
 
+__multiqc__input = expected_output
+__multiqc__output = "multiqc/multiqc_report.html"
+include: sm.modules["multiqc/2.0"]
+expected_output += [__multiqc__output]
+
+
 # these rules don't need to be submit on a node.
 localrules: conda, rulegraph
 
@@ -259,7 +262,13 @@ onsuccess:
     # add file name for snakemake stats in json
     snake_parser = snakemake.get_argument_parser().parse_args()
     json_list = expand(__summary_pipeline__json_output, sample=manager.samples)
-    sm.add_stats_summary_json(json_list, snake_parser)
+    for jfile in json_list:
+        with open(jfile, 'r') as fp:
+            jdict = json.load(fp)
+        jdict['stats'] = snake_parser.stats
+        j = json.dumps(jdict)
+        with open(jfile, 'w') as fp:
+            print(j, file=fp)
 
     # create summary pipeline for each samples
     report_dir_format = 'report_{0}'
