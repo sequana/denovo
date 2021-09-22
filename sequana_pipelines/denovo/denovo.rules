@@ -25,21 +25,35 @@ Run: snakemake -s denovo.rules
 import os
 
 import sequana
-from sequana import snaketools as sm
+from sequana_pipetools import snaketools as sm
+from sequana_pipetools.snaketools import PipelineManager
+from sequana_pipetools.snaketools import modules
+
 
 # This must be defined before the include
-configfile: 'config.yaml'
-manager = sm.PipelineManager('denovo', config)
+configfile: "config.yaml"
+
+
+manager = PipelineManager('denovo', config)
 manager.setup(globals(), mode="warning")
 
 config = manager.config
 __snakefile__ = srcdir(__snakefile__)
+__rawdata__input = manager.getrawdata()
 __report_dir__ = 'report_{0}'.format(manager.sample)
 
-__rawdata__input = manager.getrawdata()
 
 # Initiate variable that will be modified during the pipeline
 __summary_pipeline__outputs = []
+
+
+__summary_pipeline__json_output = __report_dir__ + "/summary/data.json"
+__multiqc__output = "multiqc/multiqc_report.html"
+
+rule pipeline:
+    input: __multiqc__output, ".sequana/rulegraph.svg"
+
+
 
 #
 # Normalisation of the coverage - Khmer (digital normalisation)
@@ -72,7 +86,7 @@ include: sm.modules['spades']
 # get corrected reads
 if not config['spades']['only_assembler']:
     __spades_get_fastq__input = __spades__scaffolds
-    __spades_get_fastq__yaml = __spades__outdir + 'corrected/corrected.yaml'
+    __spades_get_fastq__yaml = __spades__outdir + '/corrected/corrected.yaml'
     __spades_get_fastq__output = [
         manager.getname('spades_get_fastq', 'R1.fastq.gz'),
         manager.getname('spades_get_fastq', 'R2.fastq.gz')]
@@ -82,7 +96,6 @@ if not config['spades']['only_assembler']:
 else:
     __bwa_mem_assembly__fastq = __rawdata__input
 
-exec(open(sequana.modules['bwa_mem_dynamic'], 'r').read())
 
 #
 # Assembly assessment
@@ -103,13 +116,13 @@ __quast__input = [__spades__contigs, __spades__scaffolds]
 __quast__outdir = manager.getwkdir('quast')
 __quast__done = manager.getname('quast', '.done')
 __quast__log = manager.getlogdir('quast')
-include: sm.modules['quast']
+include: modules['quast']
 expected_output.append(expand(__quast__done, sample=manager.samples))
 
 # reduce names of contigs
 __format_contigs__input = __spades__scaffolds
 __format_contigs__output = manager.getname('format_contigs', '.fasta')
-include: sm.modules['format_contigs']
+include: modules['format_contigs']
 
 #
 # Annotation - Prokka
@@ -122,12 +135,12 @@ if config['prokka']['do']:
     __prokka__prefix = manager.sample
     __prokka__outdir = manager.getwkdir('prokka')
     __prokka__log = manager.getlogdir('prokka')
-    include: sm.modules['prokka']
+    include: modules['prokka']
     expected_output.append(expand(__prokka__gbk, sample=manager.samples))
 
 #
 # Remapping of reads on assembly:
-#  
+#
 #  - Variant calling: Freebayes
 #  - Coverage analysis: Sequana Coverage
 #
@@ -135,11 +148,43 @@ if config['prokka']['do']:
 
 # assess de novo quality with coverage analysis and variant calling
 __bwa_mem_assembly__reference = __format_contigs__output
-__bwa_mem_assembly__fai = __bwa_mem_assembly__reference + '.fai'
-__bwa_mem_assembly__bam = manager.getname('bwa_mem_assembly', '.sorted.bam')
-__bwa_mem_assembly__log = manager.getlogdir('bwa_mem_assembly')
-__bwa_index_assembly__log = '{sample}/common_logs/bwa_index.log'
-include: bwa_mem_dynamic('assembly', manager)
+
+rule bwa_index:
+    input:
+        reference=__format_contigs__output
+    output:
+        bwa_bwt=__bwa_mem_assembly__reference + '.bwt',
+        fai=__bwa_mem_assembly__reference + '.fai'
+    log:
+        "{sample}/common_logs/bwa_index.log"
+    params:
+        options="",
+        index_algorithm='is'
+    threads: 2
+    wrapper:
+            "main/wrappers/bwa/build"
+__bwa_mem_assembly__bam = "{sample}/bwa_mem_assembly/{sample}.sorted.bam"
+
+
+rule bwa:
+    input:
+        fastq=manager.getrawdata(),
+        bwa_bwt=__bwa_mem_assembly__reference + '.bwt',
+        fai=__bwa_mem_assembly__reference + '.fai',
+        reference=__format_contigs__output
+    output:
+        sorted=__bwa_mem_assembly__bam
+    log:
+        "{sample}/logs/bwa_mem_assembly.log"
+    params:
+        options=config["bwa_mem_assembly"]["options"],
+        tmp_directory=config["bwa_mem_assembly"]["tmp_directory"]
+    threads: 2
+    wrapper:
+        "main/wrappers/bwa/align"
+
+
+
 
 # initiate variables
 __sambamba_markdup__input = __bwa_mem_assembly__bam
@@ -153,7 +198,7 @@ if config['sambamba_markdup']['do']:
                                                 '.rmdup.sorted.bam')
     __sambamba_markdup__log_err = manager.getlogdir('sambamba_markdup.err')
     __sambamba_markdup__log_std = manager.getlogdir('sambamba_markdup.std')
-    include: sm.modules['sambamba_markdup']
+    include: modules['sambamba_markdup']
     __sambamba_filter__input = __sambamba_markdup__output
     __freebayes__input = __sambamba_markdup__output
     __samtools_depth__input = __sambamba_markdup__output
@@ -163,7 +208,7 @@ if config['sambamba_filter']['do']:
     __sambamba_filter__output = manager.getname('sambamba_filter',
                                                    '.filter.sorted.bam')
     __sambamba_filter__log = manager.getlogdir('sambamba_filter')
-    include: sm.modules['sambamba_filter']
+    include: modules['sambamba_filter']
     __freebayes__input = __sambamba_filter__output
     __samtools_depth__input = [__sambamba_filter__output,
                                __sambamba_filter__input]
@@ -172,7 +217,7 @@ if config['sambamba_filter']['do']:
 if config['sequana_coverage']['do']:
     __samtools_depth__output = manager.getname('samtools_depth', '.bed')
     __samtools_depth__log = manager.getlogdir('samtools_depth')
-    include: sm.modules['samtools_depth']
+    include: modules['samtools_depth']
     __sequana_coverage__bed = __samtools_depth__output
     __sequana_coverage__fasta = __bwa_mem_assembly__reference
     if config['prokka']['do']:
@@ -184,7 +229,7 @@ if config['sequana_coverage']['do']:
     __sequana_coverage__html = os.sep.join([
         __report_dir__, 'sequana_coverage.html'
     ])
-    include: sm.modules['sequana_coverage']
+    include: modules['sequana_coverage']
     expected_output.append(expand(__sequana_coverage__html,
                                   sample=manager.samples))
  
@@ -194,7 +239,7 @@ if config['freebayes']['do']:
     __freebayes__reference = __bwa_mem_assembly__reference
     __freebayes__output = manager.getname('freebayes', '.raw.vcf')
     __freebayes__log = manager.getlogdir('freebayes')
-    include: sm.modules['freebayes']
+    include: modules['freebayes']
 
     # Freebayes filter
     __freebayes_vcf_filter__input = __freebayes__output
@@ -206,58 +251,92 @@ if config['freebayes']['do']:
     __freebayes_vcf_filter__html = os.sep.join([
         __report_dir__, 'variant_calling.html'
     ])
-    include: sm.modules['freebayes_vcf_filter']
+    include: modules['freebayes_vcf_filter']
     expected_output.append(expand(__freebayes_vcf_filter__csv,
                                   sample=manager.samples))
 
-# Create requirements.txt(dependencies)
-__conda__output = "requirements.txt"
-include: sm.modules['conda'] 
 
 # Create rulegraph
-__rulegraph__input = __snakefile__
-__rulegraph__output = 'rulegraph/rulegraph.svg'
 __rulegraph__mapper = {'sequana_coverage':'../sequana_coverage.html',
                        'freebayes_vcf_filter':'../variant_calling.html',
                        'quast': '../quast/icarus.html'}
-include: sm.modules['rulegraph']
-expected_output.extend(['requirements.txt', __rulegraph__output])
+
+rule rulegraph:
+    input: manager.snakefile
+    output:
+        svg = ".sequana/rulegraph.svg"
+    params:
+        mapper = __rulegraph__mapper,
+        configname = "config.yaml"
+    wrapper:
+        "main/wrappers/rulegraph"
+
 
 # create a json file that summarise information of your pipeline
 # they must be complete in the onsuccess block
-__summary_pipeline__inputs = __rawdata__input
-__summary_pipeline__outputs.append(__format_contigs__output)
-__summary_pipeline__html = []
-__summary_pipeline__rulegraph = __rulegraph__output
-__summary_pipeline__requirements = 'requirements.txt'
-__summary_pipeline__snakefile = __snakefile__
-__summary_pipeline__config = 'config.yaml'
 __summary_pipeline__name = "De Novo Assembly"
-__summary_pipeline__json_output = manager.getname('summary_pipeline', '.json')
-include: sm.modules['summary_pipeline']
-expected_output.append(expand(__summary_pipeline__json_output,
-                              sample=manager.samples))
+
+
+rule summary:
+    input:
+        outputs=__summary_pipeline__outputs,
+        html=[],
+        rulegraph=".sequana/rulegraph.svg",
+        snakefile=__snakefile__,
+        config="config.yaml"
+    output:
+        json= __summary_pipeline__json_output
+    run:
+        import json
+        import os.path
+        summary = {'tool': 'sequana_summary',
+                    'inputs':[],
+                    'outputs': [os.path.realpath(f) for f in input['outputs']],
+                    'html': [os.path.realpath(f) for f in input['html']],
+                    'rulegraph': os.path.realpath(input['rulegraph']),
+                    'requirements': "",
+                    'snakefile': os.path.realpath(input['snakefile']),
+                     'config': os.path.realpath(input['config']),
+                     'name': "variant_calling"}
+        js = json.dumps(summary, indent=4, sort_keys=True)
+        with open(output['json'], 'w') as fp:
+            fp.write(js)
+
 
 __multiqc__input = expected_output
-__multiqc__output = "multiqc/multiqc_report.html"
-include: sm.modules["multiqc/2.0"]
-expected_output += [__multiqc__output]
+
+
+rule multiqc:
+    input:
+        __multiqc__input,
+         expand(__summary_pipeline__json_output, sample=manager.samples),
+    output:
+        __multiqc__output
+    params:
+        options=config['multiqc']['options'],
+        input_directory=config['multiqc']['input_directory'],
+        config_file=config['multiqc']['config_file'],
+        modules=config['multiqc']['modules']
+    log:
+        "multiqc/multiqc.log"
+    wrapper:
+        "main/wrappers/multiqc"
 
 
 # these rules don't need to be submit on a node.
-localrules: conda, rulegraph
+localrules: rulegraph, multiqc
 
-rule pipeline_denovo:
-    input:
-        expected_output
 
 onsuccess:
     import os
     import shutil
     import json
-    
+
     from sequana.modules_report.summary import SummaryModule
     from sequana.utils import config as conf
+    from sequana.modules_report.summary import SummaryModule2
+    from sequana import logger
+    logger.setLevel("INFO")
 
     # add file name for snakemake stats in json
     snake_parser = snakemake.get_argument_parser().parse_args()
@@ -276,9 +355,9 @@ onsuccess:
         report_dir = report_dir_format.format(proj)
         conf.output_dir = report_dir
         filename = os.sep.join([
-            proj,
-            'summary_pipeline',
-            '{0}.json'.format(proj),
+            "report_{}".format(proj),
+            'summary',
+            'data.json'
         ])
 
         # Quast section
@@ -300,7 +379,7 @@ onsuccess:
             elif os.path.isfile(prokka_dst):
                 os.remove(prokka_dst)
             shutil.copytree(prokka_src, prokka_dst)
-            
+
             ref = '<li><a href="prokka/%(f)s" download="%(f)s">%(f)s</a></li>'
             html = '\n'.join(ref % {'f': f} for f in os.listdir(prokka_dst))
             conf.summary_sections.append({
@@ -310,3 +389,35 @@ onsuccess:
             })
 
         SummaryModule(json.loads(open(filename).read()))
+
+    shell("chmod -R g+w .")
+    manager.teardown()
+
+
+    try:
+        # with some options, multiqc is not created
+        manager.clean_multiqc(__multiqc__output)
+        intro = """<h2>Overview</h2>
+            This pipeline builds denovo assemblies on a set of samples. Individual reports are available 
+            as well as a <a href="multiqc/multiqc_report.html">multiqc report</a>."""
+    except:
+        intro = """<h2>Overview</h2> Please see individual reports for details."""
+
+    intro += "<h2>Individual Reports</h2>"
+    for sample in manager.samples:
+        intro += f'<a href="report_{sample}/summary.html">{sample} </a><br>'
+
+    data = {"name": "denovo",
+            "rulegraph": ".sequana/rulegraph.svg",
+            }
+
+    conf.output_dir = os.path.abspath(".")
+    s = SummaryModule2(data, intro=intro, workflow=False)
+
+
+onerror:
+    from sequana_pipetools.errors import PipeError
+    p = PipeError("denovo")
+    p.status()
+
+

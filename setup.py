@@ -6,8 +6,8 @@ from setuptools.command.install import install
 import subprocess
 
 _MAJOR               = 0
-_MINOR               = 8
-_MICRO               = 5
+_MINOR               = 10
+_MICRO               = 0
 version              = '%d.%d.%d' % (_MAJOR, _MINOR, _MICRO)
 release              = '%d.%d' % (_MAJOR, _MINOR)
 
@@ -84,7 +84,6 @@ setup(
     zip_safe=False,
 
     entry_points = {'console_scripts':[
-        'sequana_pipelines_denovo=sequana_pipelines.denovo.main:main',
         'sequana_denovo=sequana_pipelines.denovo.main:main']
     }
 

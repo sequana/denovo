@@ -1,4 +1,17 @@
+
+.. image:: https://badge.fury.io/py/sequana-denovo.svg
+     :target: https://pypi.python.org/pypi/sequana_denovo
+
+.. image:: http://joss.theoj.org/papers/10.21105/joss.00352/status.svg
+    :target: http://joss.theoj.org/papers/10.21105/joss.00352
+    :alt: JOSS (journal of open source software) DOI
+
+.. image:: https://github.com/sequana/denovo/actions/workflows/main.yml/badge.svg
+   :target: https://github.com/sequana/denovo/actions/workflows    
+
+
 This is is the **denovo** pipeline from the `Sequana <https://sequana.readthedocs.org>`_ projet
+
 
 :Overview: a de-novo assembly pipeline for short-read sequencing data
 :Input: A set of FastQ files
@@ -10,13 +23,13 @@ This is is the **denovo** pipeline from the `Sequana <https://sequana.readthedoc
 Installation
 ~~~~~~~~~~~~
 
-You must install Sequana first::
+You must install Sequana first (use --upgrade to get the latest version installed)::
 
-    pip install sequana
+    pip install sequana --upgrade
 
 Then, just install this package::
 
-    pip install sequana_denovo
+    pip install sequana_denovo --upgrade
 
 
 Usage

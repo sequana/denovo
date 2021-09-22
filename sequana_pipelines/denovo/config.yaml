@@ -220,4 +220,8 @@ freebayes_vcf_filter:
     strand_ratio: 0.2
 
 multiqc:
-    options: "-p -f  "
+    options: -p -f 
+    modules:  
+    input_directory: .
+    config_file: "multiqc_config.yaml"
+
