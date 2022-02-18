@@ -6,3 +6,4 @@
 - spades.py
 - sambamba
 - samtools
+- normalize-by-median.py

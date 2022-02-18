@@ -28,9 +28,12 @@ NAME = "denovo"
 class Options(argparse.ArgumentParser):
     def __init__(self, prog=NAME, epilog=None):
         usage = col.purple(sequana_prolog.format(**{"name": NAME}))
-        super(Options, self).__init__(usage=usage, prog=prog, description="",
+        super(Options, self).__init__(
+            usage=usage,
+            prog=prog,
+            description="",
             epilog=epilog,
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
 
         # add a new group of options to the parser
@@ -53,8 +56,9 @@ class Options(argparse.ArgumentParser):
 
         pipeline_group = self.add_argument_group("section_prokka")
         pipeline_group.add_argument("--skip-prokka", action="store_true")
-        pipeline_group.add_argument("--prokka-kingdom", default="Bacteria",
-            type=str, choices=["Archaea", "Mitochondria", "Viruses", "Bacteria"])
+        pipeline_group.add_argument(
+            "--prokka-kingdom", default="Bacteria", type=str, choices=["Archaea", "Mitochondria", "Viruses", "Bacteria"]
+        )
 
         pipeline_group = self.add_argument_group("section_sequana_coverage")
         pipeline_group.add_argument("--sequana-coverage-circular", action="store_true")
@@ -63,20 +67,23 @@ class Options(argparse.ArgumentParser):
         pipeline_group.add_argument("--freebayes-ploidy", default=1)
 
         pipeline_group = self.add_argument_group("section_spades")
-        pipeline_group.add_argument("--spades-memory", default=64, 
-            help="max memory to be used in Gb")
+        pipeline_group.add_argument("--spades-memory", default=64, help="max memory to be used in Gb")
 
         pipeline_group = self.add_argument_group("section_digital_normalisation")
-        pipeline_group.add_argument("--digital-normalisation-max-memory-usage", 
-            default=4e9, 
-            help="maximum amount of memory to use for data  normalisation")
+        pipeline_group.add_argument(
+            "--digital-normalisation-max-memory-usage",
+            default=4e9,
+            help="maximum amount of memory to use for data  normalisation",
+        )
 
     def parse_args(self, *args):
         args_list = list(*args)
         if "--from-project" in args_list:
-            if len(args_list)>2:
-                msg = "WARNING [sequana]: With --from-project option, " + \
-                        "pipeline and data-related options will be ignored."
+            if len(args_list) > 2:
+                msg = (
+                    "WARNING [sequana]: With --from-project option, "
+                    + "pipeline and data-related options will be ignored."
+                )
                 print(col.error(msg))
             for action in self._actions:
                 if action.required is True:

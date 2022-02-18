@@ -7,7 +7,7 @@
     :alt: JOSS (journal of open source software) DOI
 
 .. image:: https://github.com/sequana/denovo/actions/workflows/main.yml/badge.svg
-   :target: https://github.com/sequana/denovo/actions/workflows    
+   :target: https://github.com/sequana/denovo/actions/workflows
 
 
 This is is the **denovo** pipeline from the `Sequana <https://sequana.readthedocs.org>`_ projet
@@ -115,10 +115,11 @@ from `OrthoDB <http://www.orthodb.org/>`_.
 ========= ====================================================================
 Version   Description
 ========= ====================================================================
+0.9.0     * Major refactoring to use wrappers + HTML report updates
 0.8.5     * add multiqc and use newest version of sequana
 0.8.4     * update pipeline to use new pipetools features
 0.8.3     * fix requirements (spades -> spades.py)
 0.8.2     * fix readtag, update config to account for new coverage setup
-0.8.1     
+0.8.1 
 0.8.0     **First release.**
 ========= ====================================================================
