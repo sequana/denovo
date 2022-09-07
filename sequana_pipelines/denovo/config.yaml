@@ -38,6 +38,7 @@ sequencing:
 # - max_memory_usage: maximum amount of memory to use for data structure.
 # - threads: number of threads to be used.
 # - options: any options recognised by normalize-by-median.py.
+# - resources: computing resources needed to run the job on a cluster
 #
 digital_normalisation:
     do: yes
@@ -46,6 +47,8 @@ digital_normalisation:
     max_memory_usage: 4e9
     threads: 4
     options: ''
+    resources:
+        mem: 4G
 
 ##############################################################################
 # Spades - De Novo Assembly
@@ -53,19 +56,20 @@ digital_normalisation:
 # :Parameters:
 # 
 # - k: comma-separated list of k-mer sizes (must be odd and less than 128).
-# - careful: tries to reduce number of mismatches and short indels.
-# - only_assembler: runs only assembling (without read error correction).
+# - preset: any preset in this list ["", "meta", "sc", "isolate", "metaplasmid", "metaviral", "rna", "rnaviral"].
+# - options: any options recognised by spades.py.
 # - memory: RAM limit for SPAdes in Gb (terminates if exceeded).
 # - threads: number of threads to be used.
-# - options: any options recognised by spades.py.
+# - resources: computing resources needed to run the job on a cluster
 # 
 spades:
     k: 21,33,55,77,99,127
-    careful: true
-    only_assembler: false
+    preset: ""
+    options: "--careful"
     memory: 64
     threads: 8
-    options: ''
+    resources:
+        mem: 64G
 
 ##############################################################################
 # Quast - Compute metrics to assess assembly
@@ -74,13 +78,13 @@ spades:
 # 
 # - reference: Reference genome file (optional).
 # - genes_file: Gene positions in the reference genome.
-# - map_reads: Map reads on reference file.
+# - options: any options recognised by quast.
 # - threads: Number of threads to be used.
-# - options: Any options recognised by quast.py.
+# - resources: computing resources needed to run the job on a cluster - options: Any options recognised by quast.py.
 # 
 quast:
     reference: ''
-    genes_file: ''
+    annotation: ''
     threads: 4
     options: ''
 
@@ -105,14 +109,14 @@ prokka:
     options: ""
 
 ##############################################################################
-# Format contigs name and remove contigs with a length lower than a threshold
+# Seqkit filter
 # 
 # :Parameters:
 # 
 # - threshold: when the contig length is lower than this number, the contig
 #       is not kept.
 # 
-format_contigs:
+seqkit_filter:
     threshold: 500
 
 ##############################################################################
@@ -126,11 +130,11 @@ format_contigs:
 # - threads: number of threads to be used.
 # - tmp_directory: temporary directory
 #
-bwa_mem_assembly:
+bwa:
     index_algorithm: is
     options: -T 30
     threads: 4
-    tmp_directory: ./tmp/
+    tmp_directory:
 
 ##############################################################################
 # Sambamba - Marks or removes duplicates
@@ -144,7 +148,7 @@ bwa_mem_assembly:
 sambamba_markdup:
     do: true
     remove: false
-    tmp_directory: ./tmp/
+    tmp_directory:
 
 ##############################################################################
 # Filter reads with a mapping score lower than an integer 
@@ -211,7 +215,7 @@ freebayes:
 # - reverse_depth: threshold for minimum coverage depth of reverse strand.
 # - strand_ratio: threshold for minimum strand ratio between 0 and 0.5.
 #
-freebayes_vcf_filter:
+vcf_filter:
     freebayes_score: 10
     frequency: 0.7
     min_depth: 6
