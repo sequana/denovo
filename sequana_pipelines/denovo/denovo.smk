@@ -6,9 +6,9 @@
 #  The full license is in the LICENSE file, distributed with this software.
 #
 #  Website:       https://github.com/sequana/sequana
-#  Website:       https://github.com/sequana/lora
+#  Website:       https://github.com/sequana/denovo
 #  Documentation: http://sequana.readthedocs.io
-#  Documentation: https://github.com/sequana/lora/README.rst
+#  Documentation: https://github.com/sequana/denovo/README.rst
 ##############################################################################
 """Short Read De Novo assembly pipeline"""
 from sequana_pipetools.snaketools import PipelineManager
@@ -17,7 +17,7 @@ from sequana_pipetools.snaketools import PipelineManager
 configfile: "config.yaml"
 
 
-manager = PipelineManager("denovo", config)
+manager = PipelineManager("denovo", config, schema="schema.yaml")
 sequana_wrapper_branch = "main"
 
 
@@ -46,6 +46,10 @@ def requested_output(manager):
         output_list += [
             expand("{sample}/vcf_filter/{sample}.filter.vcf", sample=manager.samples)
         ]
+    if config["busco"]["do"]:
+        output_list += [expand("{sample}/busco/", sample=manager.samples)]
+    if config["blast"]["do"]:
+        output_list += [expand("{sample}/blast/{sample}.tsv", sample=manager.samples)]
     return output_list
 
 
@@ -92,6 +96,15 @@ def get_sequana_coverage_input(config):
     if config["prokka"]["do"]:
         input_file["gbk"] = "{sample}/prokka/{sample}.gbk"
     return input_file
+
+
+def create_prokka_option(config):
+    """ create options with default prokka options.
+    """
+    kingdom = config.get("kingdom", "Bacteria")
+    genus = config.get("genus", "genus")
+    species = config.get("species", "species")
+    return f"--kingdom {kingdom} --genus {genus} --species {species} {config['options']}"
 
 
 def get_rulegraph_mapper(config):
@@ -186,7 +199,7 @@ rule prokka:
     log:
         "{sample}/logs/prokka.log",
     params:
-        options=config["prokka"]["options"],
+        options=create_prokka_option(config["prokka"])
     threads: config["prokka"]["threads"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/prokka"
@@ -307,6 +320,42 @@ rule sequana_coverage:
         mixture_models=config["sequana_coverage"]["mixture_models"],
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/sequana_coverage"
+
+
+
+rule seqkit_head:
+    input:
+        "{sample}/seqkit_filter/{sample}.fasta"
+    output:
+        "{sample}/subset_contigs/{sample}.subset.fasta"
+    params:
+        n_first = config["seqkit_head"]["n_first"]
+    shell:
+        """
+        seqkit head -n {params.n_first} -o {output} {input}
+        """
+
+
+rule blast:
+    input:
+        "{sample}/subset_contigs/{sample}.subset.fasta"
+    output:
+        "{sample}/blast/{sample}.tsv"
+    params:
+        db = config['blast']['blastdb'],
+        evalue = config['blast']['evalue'],
+        outfmt = config['blast']['outfmt'],
+        options = config['blast']['options']
+    threads:
+        config['blast']['threads']
+    resources:
+        **config["blast"]["resources"],
+    shell:
+        """
+        export BLASTDB={params.db}
+        blastn -query {input} -db nt -evalue {params.evalue} -out {output} -num_threads {threads} \
+            {params.options} -outfmt "{params.outfmt}"
+        """
 
 
 rule rulegraph:

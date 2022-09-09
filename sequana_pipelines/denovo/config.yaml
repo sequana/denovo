@@ -10,21 +10,7 @@
 #
 input_directory: "%(input_directory)s"
 input_readtag: _R[12]_
-input_pattern: '*fastq.gz'
-
-##############################################################################
-# Sequencing information section
-#
-# :Parameters:
-#
-# - platform: name of the technology.
-# - instrument: name of the instrument.
-# - flowcell: name of the flowcell.
-#
-sequencing:
-    platform: Illumina
-    instrument: Unknown
-    flowcell: Unknown
+input_pattern: "*fastq.gz"
 
 ##############################################################################
 # Khmer - Digital Normalisation
@@ -41,52 +27,52 @@ sequencing:
 # - resources: computing resources needed to run the job on a cluster
 #
 digital_normalisation:
-    do: yes
-    ksize: 20
-    cutoff: 20
-    max_memory_usage: 4e9
-    threads: 4
-    options: ''
-    resources:
-        mem: 4G
+  do: yes
+  ksize: 20
+  cutoff: 20
+  max_memory_usage: 4e9
+  threads: 4
+  options: ""
+  resources:
+    mem: 4G
 
 ##############################################################################
 # Spades - De Novo Assembly
-# 
+#
 # :Parameters:
-# 
+#
 # - k: comma-separated list of k-mer sizes (must be odd and less than 128).
 # - preset: any preset in this list ["", "meta", "sc", "isolate", "metaplasmid", "metaviral", "rna", "rnaviral"].
 # - options: any options recognised by spades.py.
 # - memory: RAM limit for SPAdes in Gb (terminates if exceeded).
 # - threads: number of threads to be used.
 # - resources: computing resources needed to run the job on a cluster
-# 
+#
 spades:
-    k: 21,33,55,77,99,127
-    preset: ""
-    options: "--careful"
-    memory: 64
-    threads: 8
-    resources:
-        mem: 64G
+  k: 21,33,55,77,99,127
+  preset: ""
+  options: "--careful"
+  memory: 64
+  threads: 8
+  resources:
+    mem: 64G
 
 ##############################################################################
 # Quast - Compute metrics to assess assembly
 #
 # :Parameters:
-# 
+#
 # - reference: Reference genome file (optional).
 # - genes_file: Gene positions in the reference genome.
 # - options: any options recognised by quast.
 # - threads: Number of threads to be used.
 # - resources: computing resources needed to run the job on a cluster - options: Any options recognised by quast.py.
-# 
+#
 quast:
-    reference: ''
-    annotation: ''
-    threads: 4
-    options: ''
+  reference: ""
+  annotation: ""
+  threads: 4
+  options: ""
 
 ##############################################################################
 # Prokka - Annotate the genome assembly
@@ -101,40 +87,39 @@ quast:
 # - options: Any options recognised by Prokka.
 #
 prokka:
-    do: yes
-    kingdom: Bacteria
-    genus: ""
-    species: ""
-    threads: 4
-    options: ""
+  do: yes
+  kingdom: Bacteria
+  genus: ""
+  species: ""
+  threads: 4
+  options: ""
 
 ##############################################################################
 # Seqkit filter
-# 
+#
 # :Parameters:
-# 
+#
 # - threshold: when the contig length is lower than this number, the contig
 #       is not kept.
-# 
+#
 seqkit_filter:
-    threshold: 500
+  threshold: 500
 
 ##############################################################################
 # BWA - Mapping
 #
 # :Parameters:
 #
-# - reference_file: the name of the reference file.
-# - index_algorithm: the BWA index algorithm (is or bwtsw).
+# - index_algorithm: the BWA index algorithm (auto|is|bwtsw|rb2).
 # - options: any options recognised by BWA MEM tool.
 # - threads: number of threads to be used.
 # - tmp_directory: temporary directory
 #
 bwa:
-    index_algorithm: is
-    options: -T 30
-    threads: 4
-    tmp_directory:
+  index_algorithm: is
+  options: -T 30
+  threads: 4
+  tmp_directory:
 
 ##############################################################################
 # Sambamba - Marks or removes duplicates
@@ -146,12 +131,12 @@ bwa:
 # - tmp_directory: set the temporary directory.
 #
 sambamba_markdup:
-    do: true
-    remove: false
-    tmp_directory:
+  do: true
+  remove: false
+  tmp_directory:
 
 ##############################################################################
-# Filter reads with a mapping score lower than an integer 
+# Filter reads with a mapping score lower than an integer
 #
 # :Parameters:
 #
@@ -159,11 +144,11 @@ sambamba_markdup:
 # - threshold: mapping score threshold (between 0 and 60).
 #
 sambamba_filter:
-    do: true
-    threshold: 30
+  do: true
+  threshold: 30
 
 ##############################################################################
-# Sequana coverage - Analyse the coverage of the mapping 
+# Sequana coverage - Analyse the coverage of the mapping
 #
 # :Parameters:
 #
@@ -176,18 +161,15 @@ sambamba_filter:
 # - gc_window_size: window size to compute GC content.
 #
 sequana_coverage:
-    do: yes
-    mixture_models: 2
-    circular: false
-    window_size: 40001
-    chunksize: 5000000
-    low_threshold: -4.0
-    high_threshold: 4.0
-    gc_window_size: 201
-    double_threshold: 0.5
-    genbank_file: ''
-    reference_file: ''
-
+  do: yes
+  mixture_models: 2
+  circular: false
+  window_size: 40001
+  chunksize: 5000000
+  low_threshold: -4.0
+  high_threshold: 4.0
+  gc_window_size: 201
+  double_threshold: 0.5
 
 ##############################################################################
 # Freebayes - Variant caller
@@ -199,9 +181,9 @@ sequana_coverage:
 # - options: any options recognised by freebayes.
 #
 freebayes:
-    do: yes
-    ploidy: 1
-    options: ''
+  do: yes
+  ploidy: 1
+  options: ""
 
 ##############################################################################
 # Filter VCF
@@ -216,16 +198,61 @@ freebayes:
 # - strand_ratio: threshold for minimum strand ratio between 0 and 0.5.
 #
 vcf_filter:
-    freebayes_score: 10
-    frequency: 0.7
-    min_depth: 6
-    forward_depth: 3
-    reverse_depth: 3
-    strand_ratio: 0.2
+  freebayes_score: 10
+  frequency: 0.7
+  min_depth: 6
+  forward_depth: 3
+  reverse_depth: 3
+  strand_ratio: 0.2
+
+##############################################################################
+# Busco
+#
+# :Parameters:
+#
+# - do: if unchecked, this rule is ignored
+# - lineage: Specify the name of the BUSCO lineage to be used.
+# - options: any options recognised by `busco` cli.
+# - threads: Number of threads to use.
+busco:
+  do: false
+  lineage: ""
+  options: "--offline"
+  threads: 4
+  resources:
+    mem: 4G
+
+##############################################################################
+# SeqKit Head
+#
+# :Parameters:
+#
+# - n_first: Keep only n first contigs
+seqkit_head:
+  n_first: 100
+
+##############################################################################
+# Blast
+#
+# :Parameters:
+#
+# - do: if unchecked, this rule is ignored
+# - db_dir: Path to BLAST databases.
+# - evalue: Expectation value (E) threshold for saving hits.
+# - options: any options recognised by `blastn` cli (except --outfmt)
+# - threads: Number of threads to use.
+blast:
+  do: false
+  blastdb: ""
+  evalue: "1e-10"
+  outfmt: "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore staxids stitle"
+  options: "-max_target_seqs 5"
+  threads: 4
+  resources:
+    mem: 12G
 
 multiqc:
-    options: -p -f 
-    modules:  
-    input_directory: .
-    config_file: "multiqc_config.yaml"
-
+  options: -p -f
+  modules:
+  input_directory: .
+  config_file: "multiqc_config.yaml"
