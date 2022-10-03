@@ -12,6 +12,10 @@ mapping:
     type: str
     required: True
 
+  "qc_apptainer":
+    type: str
+    required: False
+
   "digital_normalisation":
     type: map
     mapping:
@@ -63,10 +67,10 @@ mapping:
   "quast":
     type: map
     mapping:
-      "reference":
+      "reference_file":
         type: str
         required: false
-      "annotation":
+      "annotation_file":
         type: str
         required: false
       "options":
@@ -234,9 +238,6 @@ mapping:
         required: false
       "threads":
         type: int
-        required: true
-      "resources":
-        type: any
         required: true
 
   "seqkit_head":

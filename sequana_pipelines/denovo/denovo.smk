@@ -168,10 +168,11 @@ rule quast:
     log:
         "{sample}/logs/quast.log",
     params:
-        reference=config["quast"]["reference"],
-        annotation=config["quast"]["annotation"],
+        reference=config["quast"]["reference_file"],
+        annotation=config["quast"]["annotation_file"],
         options=config["quast"]["options"],
     threads: config["quast"]["threads"]
+    container: config["qc_apptainer"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/quast"
 
@@ -185,6 +186,7 @@ rule seqkit_filter:
         "{sample}/logs/seqkit_filter.log",
     params:
         config["seqkit_filter"]["threshold"],
+    container: "https://zenodo.org/record/6313001/files/seqkit_2.1.0.img"
     shell:
         """
         seqkit seq -i --id-regexp "^(.+)_cov.*" --min-len {params} {input} --out-file {output} > {log} 2>&1
@@ -201,8 +203,27 @@ rule prokka:
     params:
         options=create_prokka_option(config["prokka"])
     threads: config["prokka"]["threads"]
+    container: config["qc_apptainer"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/prokka"
+
+
+rule busco:
+    input:
+        "{sample}/seqkit_filter/{sample}.fasta",
+    output:
+       directory("{sample}/busco"),
+    log:
+        "{sample}/logs/busco.log",
+    params:
+        mode="genome",
+        lineage=config["busco"]["lineage"],
+        short_summary_filename="short_summary_{sample}.txt",
+        options=config["busco"]["options"],
+    threads: config["busco"]["threads"]
+    container: config["qc_apptainer"]
+    wrapper:
+        f"{sequana_wrapper_branch}/wrappers/busco"
 
 
 rule bwa_index:
@@ -330,6 +351,7 @@ rule seqkit_head:
         "{sample}/subset_contigs/{sample}.subset.fasta"
     params:
         n_first = config["seqkit_head"]["n_first"]
+    container: "https://zenodo.org/record/6313001/files/seqkit_2.1.0.img"
     shell:
         """
         seqkit head -n {params.n_first} -o {output} {input}
@@ -350,10 +372,10 @@ rule blast:
         config['blast']['threads']
     resources:
         **config["blast"]["resources"],
+    container: config["qc_apptainer"]
     shell:
         """
-        export BLASTDB={params.db}
-        blastn -query {input} -db nt -evalue {params.evalue} -out {output} -num_threads {threads} \
+        blastn -query {input} -db {params.db}/nt -evalue {params.evalue} -out {output} -num_threads {threads} \
             {params.options} -outfmt "{params.outfmt}"
         """
 
@@ -366,6 +388,7 @@ rule rulegraph:
     params:
         configname="config.yaml",
         mapper=get_rulegraph_mapper(config),
+        required_local_files=["schema.yaml"],
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/rulegraph"
 

@@ -12,6 +12,9 @@ input_directory: "%(input_directory)s"
 input_readtag: _R[12]_
 input_pattern: "*fastq.gz"
 
+# TODO: add the apptainer in zenodo to allowed predownload
+qc_apptainer: 
+
 ##############################################################################
 # Khmer - Digital Normalisation
 #
@@ -62,15 +65,15 @@ spades:
 #
 # :Parameters:
 #
-# - reference: Reference genome file (optional).
-# - genes_file: Gene positions in the reference genome.
+# - reference_file: Reference genome file (optional).
+# - annotation_file: Gene positions in the reference genome.
 # - options: any options recognised by quast.
 # - threads: Number of threads to be used.
 # - resources: computing resources needed to run the job on a cluster - options: Any options recognised by quast.py.
 #
 quast:
-  reference: ""
-  annotation: ""
+  reference_file: ""
+  annotation_file: ""
   threads: 4
   options: ""
 
@@ -93,6 +96,21 @@ prokka:
   species: ""
   threads: 4
   options: ""
+
+##############################################################################
+# Busco
+#
+# :Parameters:
+#   
+# - do: if unchecked, this rule is ignored
+# - lineage: Specify the name of the BUSCO lineage to be used.
+# - options: any options recognised by `busco` cli.
+# - threads: Number of threads to use.
+busco:
+    do: false
+    lineage: ''
+    options: '--offline'
+    threads: 4
 
 ##############################################################################
 # Seqkit filter
@@ -205,22 +223,6 @@ vcf_filter:
   reverse_depth: 3
   strand_ratio: 0.2
 
-##############################################################################
-# Busco
-#
-# :Parameters:
-#
-# - do: if unchecked, this rule is ignored
-# - lineage: Specify the name of the BUSCO lineage to be used.
-# - options: any options recognised by `busco` cli.
-# - threads: Number of threads to use.
-busco:
-  do: false
-  lineage: ""
-  options: "--offline"
-  threads: 4
-  resources:
-    mem: 4G
 
 ##############################################################################
 # SeqKit Head
