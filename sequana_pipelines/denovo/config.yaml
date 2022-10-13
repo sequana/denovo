@@ -188,6 +188,8 @@ sequana_coverage:
   high_threshold: 4.0
   gc_window_size: 201
   double_threshold: 0.5
+  resources:
+    mem: 12G
 
 ##############################################################################
 # Freebayes - Variant caller

@@ -186,6 +186,9 @@ mapping:
       "gc_window_size":
         type: int
         range: { min: 2 }
+      "resources":
+        type: any
+        required: true
 
   "freebayes":
     type: map

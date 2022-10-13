@@ -339,6 +339,7 @@ rule sequana_coverage:
         high_threshold=config["sequana_coverage"]["high_threshold"],
         low_threshold=config["sequana_coverage"]["low_threshold"],
         mixture_models=config["sequana_coverage"]["mixture_models"],
+    resources: **config["sequana_coverage"]["resources"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/sequana_coverage"
 
