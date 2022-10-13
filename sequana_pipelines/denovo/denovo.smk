@@ -361,24 +361,23 @@ rule seqkit_head:
 
 rule blast:
     input:
-        "{sample}/subset_contigs/{sample}.subset.fasta"
+        query="{sample}/subset_contigs/{sample}.subset.fasta",
+        blastdb=config["blast"]["blastdb"],
     output:
         "{sample}/blast/{sample}.tsv"
     params:
-        db = config['blast']['blastdb'],
-        evalue = config['blast']['evalue'],
-        outfmt = config['blast']['outfmt'],
-        options = config['blast']['options']
+        blast_type="blastn",
+        db_type="nt",
+        evalue=config['blast']['evalue'],
+        outfmt=config['blast']['outfmt'],
+        options=config['blast']['options']
     threads:
         config['blast']['threads']
     resources:
         **config["blast"]["resources"],
     container: config["qc_apptainer"]
-    shell:
-        """
-        blastn -query {input} -db {params.db}/nt -evalue {params.evalue} -out {output} -num_threads {threads} \
-            {params.options} -outfmt "{params.outfmt}"
-        """
+    wrapper:
+        f"{sequana_wrapper_branch}/wrappers/blast/blast"
 
 
 rule rulegraph:

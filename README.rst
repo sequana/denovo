@@ -115,6 +115,7 @@ from `OrthoDB <http://www.orthodb.org/>`_.
 ========= ====================================================================
 Version   Description
 ========= ====================================================================
+0.10.0    * Major refactoring & add blast and busco rules
 0.9.0     * Major refactoring to use wrappers + HTML report updates
 0.8.5     * add multiqc and use newest version of sequana
 0.8.4     * update pipeline to use new pipetools features
