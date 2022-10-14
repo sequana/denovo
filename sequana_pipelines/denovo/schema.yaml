@@ -1,0 +1,294 @@
+type: map
+mapping:
+  "input_directory":
+    type: str
+    required: True
+
+  "input_readtag":
+    type: str
+    required: True
+
+  "input_pattern":
+    type: str
+    required: True
+
+  "qc_apptainer":
+    type: str
+    required: False
+
+  "digital_normalisation":
+    type: map
+    mapping:
+      "do":
+        type: bool
+        required: true
+      "ksize":
+        type: int
+        required: true
+      "cutoff":
+        type: int
+        required: true
+      "max_memory_usage":
+        type: float
+        required: true
+      "options":
+        type: text
+        required: false
+      "threads":
+        type: int
+        required: true
+      "resources":
+        type: any
+        required: true
+
+  "spades":
+    type: map
+    mapping:
+      "k":
+        type: str
+        required: true
+      "preset":
+        type: str
+        required: true
+        nullable: true
+      "memory":
+        type: int
+        required: true
+      "options":
+        type: text
+        required: false
+      "threads":
+        type: int
+        required: true
+      "resources":
+        type: any
+        required: true
+
+  "quast":
+    type: map
+    mapping:
+      "reference_file":
+        type: str
+        required: false
+      "annotation_file":
+        type: str
+        required: false
+      "options":
+        type: text
+        required: false
+      "threads":
+        type: int
+        required: true
+
+  prokka:
+    type: map
+    mapping:
+      "do":
+        type: bool
+        required: true
+      "kingdom":
+        type: str
+        required: false
+      "genus":
+        type: str
+        required: false
+      "species":
+        type: str
+        required: false
+      "options":
+        type: text
+        required: false
+      "threads":
+        type: int
+        required: true
+
+  "seqkit_filter":
+    type: map
+    mapping:
+      "threshold":
+        type: int
+        required: true
+
+  "bwa":
+    type: map
+    mapping:
+      "index_algorithm":
+        type: str
+        required: true
+        enum: ["auto", "is", "bwtsw", "rb2"]
+      "options":
+        type: str
+        required: false
+      "threads":
+        type: int
+        required: true
+      "tmp_directory":
+        type: str
+        required: false
+
+  "sambamba_filter":
+    type: map
+    mapping:
+      "do":
+        type: bool
+        required: true
+      "threshold":
+        type: int
+        required: true
+
+  "sambamba_markdup":
+    type: map
+    mapping:
+      "do":
+        type: bool
+        required: true
+      "remove":
+        type: bool
+        required: true
+      "tmp_directory":
+        type: str
+        required: false
+
+  "sequana_coverage":
+    type: map
+    mapping:
+      "do":
+        type: bool
+        default: false
+        required: true
+      "circular":
+        type: bool
+        default: true
+        required: true
+      "double_threshold":
+        type: float
+        range: { min: 0, max: 1 }
+        required: false
+        default: 0.5
+      "high_threshold":
+        type: float
+        range: { min: 2 }
+      "low_threshold":
+        type: float
+        range: { max: -2 }
+      "mixture_models":
+        type: int
+        required: true
+        range: { min: 1, max: 3 }
+      "chunksize":
+        type: int
+        required: false
+        default: 5000000
+      "window_size":
+        default: 20001
+        type: int
+        range: { min: 3 }
+      "gc_window_size":
+        type: int
+        range: { min: 2 }
+      "resources":
+        type: any
+        required: true
+
+  "freebayes":
+    type: map
+    mapping:
+      "do":
+        type: bool
+        required: true
+      "ploidy":
+        type: int
+        required: true
+      "options":
+        type: str
+        required: false
+
+  "vcf_filter":
+    type: map
+    mapping:
+      "freebayes_score":
+        type: int
+        required: true
+      "frequency":
+        type: float
+        required: true
+      "min_depth":
+        type: int
+        required: true
+      "forward_depth":
+        type: int
+        required: true
+      "reverse_depth":
+        type: int
+        required: true
+      "strand_ratio":
+        type: float
+        required: true
+
+  "busco":
+    type: map
+    func: ext_map_optionnal
+    mapping:
+      "do":
+        type: bool
+        required: true
+      "lineage":
+        type: str
+        required: true
+        nullable: false
+      "options":
+        type: text
+        required: false
+      "threads":
+        type: int
+        required: true
+
+  "seqkit_head":
+    type: map
+    mapping:
+      "n_first":
+        type: int
+        required: true
+
+  "blast":
+    type: map
+    func: ext_map_optionnal
+    mapping:
+      "do":
+        type: bool
+        required: true
+      "blastdb":
+        type: str
+        required: true
+        nullable: false
+      "evalue":
+        type: str
+        required: true
+      "outfmt":
+        type: str
+        required: true
+      "options":
+        type: str
+        required: false
+      "threads":
+        type: int
+        required: true
+      "resources":
+        type: any
+        required: true
+
+  "multiqc":
+    type: map
+    mapping:
+      "modules":
+        type: str
+        required: false
+      "options":
+        type: str
+        required: false
+      "config_file":
+        type: str
+        required: false
+      "input_directory":
+        type: str
+        required: true

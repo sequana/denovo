@@ -37,7 +37,7 @@ class Options(argparse.ArgumentParser):
         )
 
         # add a new group of options to the parser
-        so = SlurmOptions()
+        so = SlurmOptions(memory=8000, profile="local")
         so.add_options(self)
 
         # add a snakemake group of options to the parser
@@ -103,6 +103,10 @@ def main(args=None):
     # option parsing including common epilog
     options = Options(NAME, epilog=sequana_epilog).parse_args(args[1:])
 
+    # use profile slurm if user set a slurm queue
+    if options.slurm_queue != "common":
+        options.profile = "slurm"
+
     # the real stuff is here
     manager = SequanaManager(options, NAME)
 
@@ -136,6 +140,7 @@ def main(args=None):
 
         # ---------------------------------------------------------- spades
         cfg.spades.memory = options.spades_memory
+        cfg.spades.resources.mem = f"{options.spades_memory}G"
 
         # -------------------------------------------- digital normalisation
         cfg.digital_normalisation.max_memory_usage = options.digital_normalisation_max_memory_usage

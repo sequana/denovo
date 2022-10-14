@@ -37,8 +37,8 @@ Usage
 
 ::
 
-    sequana_pipelines_denovo --help
-    sequana_pipelines_denovo --input-directory DATAPATH 
+    sequana_denovo --help
+    sequana_denovo --input-directory DATAPATH 
 
 This creates a directory with the pipeline and configuration file. You will then need 
 to execute the pipeline::
@@ -49,9 +49,9 @@ to execute the pipeline::
 This launch a snakemake pipeline. If you are familiar with snakemake, you can 
 retrieve the pipeline itself and its configuration files and then execute the pipeline yourself with specific parameters::
 
-    snakemake -s denovo.rules -c config.yaml --cores 4 --stats stats.txt
+    snakemake -s denovo.smk -c config.yaml --cores 4 --stats stats.txt
 
-Or use `sequanix <https://sequana.readthedocs.io/en/master/sequanix.html>`_ interface.
+Or use `sequanix <https://sequana.readthedocs.io/en/main/sequanix.html>`_ interface.
 
 Requirements
 ~~~~~~~~~~~~
@@ -72,7 +72,7 @@ This pipelines requires the following executable(s):
 
 
 
-.. image:: https://raw.githubusercontent.com/sequana/sequana_denovo/master/sequana_pipelines/denovo/dag.png
+.. image:: https://raw.githubusercontent.com/sequana/sequana_denovo/main/sequana_pipelines/denovo/dag.png
 
 
 Details
@@ -115,6 +115,7 @@ from `OrthoDB <http://www.orthodb.org/>`_.
 ========= ====================================================================
 Version   Description
 ========= ====================================================================
+0.10.0    * Major refactoring & add blast and busco rules
 0.9.0     * Major refactoring to use wrappers + HTML report updates
 0.8.5     * add multiqc and use newest version of sequana
 0.8.4     * update pipeline to use new pipetools features
