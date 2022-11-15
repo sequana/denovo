@@ -8,9 +8,10 @@
 # use it, otherwise use input_samples.
 # ============================================================================
 #
-input_directory: "%(input_directory)s"
+input_directory: ""
 input_readtag: _R[12]_
 input_pattern: "*fastq.gz"
+assembler: "spades"
 
 # TODO: add the apptainer in zenodo to allowed predownload
 qc_apptainer: 
@@ -56,6 +57,23 @@ spades:
   preset: ""
   options: "--careful"
   memory: 64
+  threads: 8
+  resources:
+    mem: 64G
+
+##############################################################################
+# Unicycler - De Novo Assembly
+#
+# :Parameters:
+#
+# - mode: any bridging mode in this list ["conservative", "normal", "bold"]
+# - options: any options recognised by unicycler.
+# - threads: number of threads to be used.
+# - resources: computing resources needed to run the job on a cluster
+#
+unicycler:
+  mode: "normal"
+  options: ""
   threads: 8
   resources:
     mem: 64G

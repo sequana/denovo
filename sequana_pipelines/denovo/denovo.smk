@@ -72,6 +72,14 @@ def get_normalized_fastq(wildcards):
     return get_raw_fastq(wildcards)
 
 
+def get_assembly(wildcards):
+    """Get assembly"""
+    sample = wildcards.sample
+    if config["assembler"] == "unicycler":
+        return f"{sample}/unicycler/{sample}.fasta"
+    return f"{sample}/spades/{sample}.scaffolds.fasta"
+
+
 def get_markdup_bam(wildcards):
     """Get markdup bam file"""
     sample = wildcards.sample
@@ -159,10 +167,27 @@ rule spades:
         f"{sequana_wrapper_branch}/wrappers/spades"
 
 
+rule unicycler:
+    input:
+        get_normalized_fastq,
+    output:
+        "{sample}/unicycler/{sample}.fasta"
+    params:
+        mode=config["unicycler"]["mode"],
+        options=config["unicycler"]["options"],
+    log:
+        "{sample}/logs/unicycler.log",
+    threads: config["unicycler"]["threads"]
+    container: config["qc_apptainer"]
+    resources:
+        **config["unicycler"]["resources"],
+    wrapper:
+        f"{sequana_wrapper_branch}/wrappers/unicycler"
+
 rule quast:
     input:
         fastq=get_normalized_fastq,
-        assembly="{sample}/spades/{sample}.scaffolds.fasta",
+        assembly=get_assembly,
     output:
         "{sample}/quast/quast.done",
     log:
@@ -179,7 +204,7 @@ rule quast:
 
 rule seqkit_filter:
     input:
-        "{sample}/spades/{sample}.scaffolds.fasta",
+        get_assembly,
     output:
         "{sample}/seqkit_filter/{sample}.fasta",
     log:
@@ -398,7 +423,7 @@ rule rulegraph:
 # they must be complete in the onsuccess block
 rule summary:
     input:
-        outputs="{sample}/spades/{sample}.scaffolds.fasta",
+        outputs=get_assembly,
         html=[],
         rulegraph=".sequana/rulegraph.svg",
         snakefile=workflow.snakefile,

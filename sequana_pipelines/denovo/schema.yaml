@@ -12,6 +12,11 @@ mapping:
     type: str
     required: True
 
+  "assembler":
+    type: str
+    required: True
+    enum: ["spades", "unicycler"]
+
   "qc_apptainer":
     type: str
     required: False
@@ -54,6 +59,23 @@ mapping:
       "memory":
         type: int
         required: true
+      "options":
+        type: text
+        required: false
+      "threads":
+        type: int
+        required: true
+      "resources":
+        type: any
+        required: true
+
+
+  "unicycler":
+    type: map
+    mapping:
+      "mode":
+        type: text
+        required: false
       "options":
         type: text
         required: false
