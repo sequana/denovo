@@ -29,37 +29,25 @@ jobs:
     - name: checkout git repo
       uses: actions/checkout@v2
 
-    - name: Set up Python 3.X
-      uses: actions/setup-python@v2
+    - name: conda/mamba
+      uses: mamba-org/provision-with-micromamba@main
       with:
-        python-version: ${{ matrix.python }}
-
-    - name: Add conda to system path
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-        conda update ruamel_yaml
-
-    - name: conda
-      run: |
-        conda install -c conda-forge mamba --quiet
-        # quast not included due to boost compat issues
-        mamba install -c bioconda -c conda-forge --quiet -y freebayes bwa picard prokka spades sambamba samtools
-
-
-    - name: Install dependencies
-      run: |
-        pip install coveralls pytest-cov pytest pytest-xdist
+          environment-file: environment.yml
+          extra-specs: |
+            python=${{ matrix.python }}
 
     - name: install package itself
+      shell: bash -l {0}
       run: |
-         pip install .
+        pip install .[testing]
 
     - name: testing
+      shell: bash -l {0}
       run: |
         pytest -v --cov-report term-missing --cov=sequana_pipelines.denovo
 
     - name: coveralls
+      shell: bash -l {0}
       run: |
         echo $COVERALLS_REPO_TOKEN
         coveralls --service=github

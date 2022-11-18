@@ -1,0 +1,17 @@
+name: sequana_fastqc
+
+channels:
+- conda-forge
+- bioconda
+- defaults
+- r
+
+dependencies:
+- graphviz
+- freebayes
+- bwa
+- picard
+- prokka
+- spades
+- sambamba
+- samtools

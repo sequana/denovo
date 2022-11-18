@@ -20,7 +20,6 @@ metainfo = {
     'platforms' : ['Linux', 'Unix', 'MacOsX', 'Windows'],
     'keywords' : ['snakemake, ngs, denovo, assembly, short read'],
     'classifiers' : [
-          #'Development Status :: 4 - Beta',
           'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Education',
           'Intended Audience :: End Users/Desktop',
@@ -60,7 +59,17 @@ setup(
     packages = ["sequana_pipelines.denovo",],
 
     install_requires = open("requirements.txt").read(),
-
+    extras_require={
+        "testing": [
+            "pytest",
+            "pytest-cov",
+            "pytest-xdist",
+            "pytest-mock",
+            "pytest-timeout",
+            "pytest-runner",
+            "coveralls",
+        ],
+    },
     # This is recursive include of data files
     exclude_package_data = {"": ["__pycache__"]},
     package_data = {

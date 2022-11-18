@@ -23,17 +23,19 @@ This is is the **denovo** pipeline from the `Sequana <https://sequana.readthedoc
 Installation
 ~~~~~~~~~~~~
 
-You must install Sequana first (use --upgrade to get the latest version installed)::
+**sequana_denovo** is based on Python3, just install the package as follows::
 
     pip install sequana --upgrade
 
-Then, just install this package::
-
-    pip install sequana_denovo --upgrade
-
+You will need third-party software such as fastqc. Please see below for details.
 
 Usage
 ~~~~~
+
+The following command will scan all files ending in .fastq.gz found in the local
+directory, create a directory called denovo/ where a snakemake pipeline is
+stored. Depending on the number of files and their sizes, the
+process may be long::
 
 ::
 
