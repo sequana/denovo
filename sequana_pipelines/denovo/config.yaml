@@ -13,8 +13,19 @@ input_readtag: _R[12]_
 input_pattern: "*fastq.gz"
 assembler: "spades"
 
-# TODO: add the apptainer in zenodo to allowed predownload
-qc_apptainer: 
+apptainers:
+  blast:
+  busco:
+  bwa: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
+  digital_normalisation: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
+  freebayes: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
+  quast: https://zenodo.org/record/5708848/files/quast_5.0.2.img
+  prokka: "https://zenodo.org/record/5708864/files/prokka_1.14.5.img"
+  sambamba: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
+  samtools: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
+  seqkit: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
+  spades: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
+  unicycler:
 
 ##############################################################################
 # Khmer - Digital Normalisation
@@ -37,6 +48,7 @@ digital_normalisation:
   max_memory_usage: 4e9
   threads: 4
   options: ""
+
   resources:
     mem: 4G
 
@@ -140,6 +152,7 @@ busco:
 #
 seqkit_filter:
   threshold: 500
+
 
 ##############################################################################
 # BWA - Mapping

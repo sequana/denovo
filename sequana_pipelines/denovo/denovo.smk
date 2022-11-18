@@ -129,7 +129,7 @@ rule digital_normalisation:
     input:
         fastq=get_raw_fastq,
     output:
-        [
+        fastq=[
             f"{{sample}}/digital_normalisation/{{sample}}_R{i}_.dn.fastq"
             for i in range(1, 2 + manager.paired)
         ],
@@ -140,7 +140,9 @@ rule digital_normalisation:
         cutoff=config["digital_normalisation"]["cutoff"],
         m=config["digital_normalisation"]["max_memory_usage"],
         options=config["digital_normalisation"]["options"],
+        prefix="dn"
     threads: config["digital_normalisation"]["threads"]
+    container: config["apptainers"]["digital_normalisation"]
     resources:
         **config["digital_normalisation"]["resources"],
     wrapper:
@@ -161,6 +163,7 @@ rule spades:
     log:
         "{sample}/logs/spades.log",
     threads: config["spades"]["threads"]
+    container: config["apptainers"]["spades"]
     resources:
         **config["spades"]["resources"],
     wrapper:
@@ -178,7 +181,7 @@ rule unicycler:
     log:
         "{sample}/logs/unicycler.log",
     threads: config["unicycler"]["threads"]
-    container: config["qc_apptainer"]
+    container: config["apptainers"]["unicycler"]
     resources:
         **config["unicycler"]["resources"],
     wrapper:
@@ -197,7 +200,7 @@ rule quast:
         annotation=config["quast"]["annotation_file"],
         options=config["quast"]["options"],
     threads: config["quast"]["threads"]
-    container: config["qc_apptainer"]
+    container: config["apptainers"]["quast"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/quast"
 
@@ -211,7 +214,7 @@ rule seqkit_filter:
         "{sample}/logs/seqkit_filter.log",
     params:
         config["seqkit_filter"]["threshold"],
-    container: "https://zenodo.org/record/6313001/files/seqkit_2.1.0.img"
+    container: config["apptainers"]["seqkit"]
     shell:
         """
         seqkit seq -i --id-regexp "^(.+)_cov.*" --min-len {params} {input} --out-file {output} > {log} 2>&1
@@ -228,7 +231,7 @@ rule prokka:
     params:
         options=create_prokka_option(config["prokka"])
     threads: config["prokka"]["threads"]
-    container: config["qc_apptainer"]
+    container: config["apptainers"]["prokka"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/prokka"
 
@@ -246,7 +249,7 @@ rule busco:
         short_summary_filename="short_summary_{sample}.txt",
         options=config["busco"]["options"],
     threads: config["busco"]["threads"]
-    container: config["qc_apptainer"]
+    container: config["apptainers"]["busco"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/busco"
 
@@ -262,6 +265,7 @@ rule bwa_index:
     params:
         index_algorithm=config["bwa"]["index_algorithm"],
     threads: 2
+    container: config['apptainers']['bwa']
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/bwa/build"
 
@@ -279,6 +283,7 @@ rule bwa:
     params:
         options=config["bwa"]["options"],
     threads: config["bwa"]["threads"]
+    container: config['apptainers']["bwa"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/bwa/align"
 
@@ -292,6 +297,7 @@ rule sambamba_markdup:
         "{sample}/logs/sambamba_markdup.log",
     params:
         remove_duplicates=config["sambamba_markdup"]["remove"],
+    container: config['apptainers']["sambamba"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/sambamba_markdup"
 
@@ -305,6 +311,7 @@ rule sambamba_filter:
         "{sample}/logs/sambamba_filter.log",
     params:
         threshold=config["sambamba_filter"]["threshold"],
+    container: config['apptainers']["sambamba"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/sambamba_filter"
 
@@ -320,6 +327,7 @@ rule freebayes:
     params:
         ploidy=config["freebayes"]["ploidy"],
         options=config["freebayes"]["options"],
+    container: config['apptainers']["freebayes"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/freebayes"
 
@@ -333,6 +341,7 @@ rule freebayes_vcf_filter:
         html="{sample}/variant_calling.html",
     params:
         filter_dict=config["vcf_filter"],
+    container: config['apptainers']["freebayes"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/freebayes_vcf_filter"
 
@@ -344,6 +353,7 @@ rule samtools_depth:
         "{sample}/samtools_depth/{sample}.bed",
     log:
         "{sample}/logs/samtools_depth.log",
+    container: config['apptainers']['samtools']
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/samtools_depth"
 
@@ -377,7 +387,7 @@ rule seqkit_head:
         "{sample}/subset_contigs/{sample}.subset.fasta"
     params:
         n_first = config["seqkit_head"]["n_first"]
-    container: "https://zenodo.org/record/6313001/files/seqkit_2.1.0.img"
+    container: config['apptainers']["seqkit"]
     shell:
         """
         seqkit head -n {params.n_first} -o {output} {input}
@@ -400,7 +410,7 @@ rule blast:
         config['blast']['threads']
     resources:
         **config["blast"]["resources"],
-    container: config["qc_apptainer"]
+    container: config["apptainers"]["blast"]
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/blast/blast"
 
