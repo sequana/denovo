@@ -139,8 +139,7 @@ rule digital_normalisation:
         ksize=config["digital_normalisation"]["ksize"],
         cutoff=config["digital_normalisation"]["cutoff"],
         m=config["digital_normalisation"]["max_memory_usage"],
-        options=config["digital_normalisation"]["options"],
-        prefix="dn"
+        options=config["digital_normalisation"]["options"]
     threads: config["digital_normalisation"]["threads"]
     container: config["apptainers"]["digital_normalisation"]
     resources:
