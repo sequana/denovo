@@ -17,9 +17,8 @@ mapping:
     required: True
     enum: ["spades", "unicycler"]
 
-  "qc_apptainer":
-    type: str
-    required: False
+  "apptainers":
+    type: any
 
   "digital_normalisation":
     type: map
