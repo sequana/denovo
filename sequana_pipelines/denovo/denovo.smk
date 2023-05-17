@@ -418,13 +418,25 @@ rule rulegraph:
     input:
         workflow.snakefile,
     output:
-        svg=".sequana/rulegraph.svg",
+        "rulegraph/rulegraph.dot",
     params:
         configname="config.yaml",
         mapper=get_rulegraph_mapper(config),
         required_local_files=["schema.yaml"],
     wrapper:
         f"{sequana_wrapper_branch}/wrappers/rulegraph"
+
+
+rule dot2svg:
+    input:
+        "rulegraph/rulegraph.dot"
+    output:
+        ".sequana/rulegraph.svg"
+    container:
+        config['apptainers']['graphviz']
+    shell:
+        """dot -Tsvg {input} -o {output}"""
+
 
 
 # ======================================================================= summary

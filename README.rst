@@ -2,13 +2,19 @@
 .. image:: https://badge.fury.io/py/sequana-denovo.svg
      :target: https://pypi.python.org/pypi/sequana_denovo
 
-.. image:: http://joss.theoj.org/papers/10.21105/joss.00352/status.svg
-    :target: http://joss.theoj.org/papers/10.21105/joss.00352
-    :alt: JOSS (journal of open source software) DOI
-
 .. image:: https://github.com/sequana/denovo/actions/workflows/main.yml/badge.svg
    :target: https://github.com/sequana/denovo/actions/workflows/main.yml
 
+.. image:: https://coveralls.io/repos/github/sequana/denovo/badge.svg?branch=main
+    :target: https://coveralls.io/github/sequana/denovo?branch=main
+
+.. image:: https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C3.10-blue.svg
+    :target: https://pypi.python.org/pypi/sequana
+    :alt: Python 3.8 | 3.9 | 3.10
+
+.. image:: http://joss.theoj.org/papers/10.21105/joss.00352/status.svg
+   :target: http://joss.theoj.org/papers/10.21105/joss.00352
+   :alt: JOSS (journal of open source software) DOI
 
 This is is the **denovo** pipeline from the `Sequana <https://sequana.readthedocs.org>`_ projet
 
@@ -117,8 +123,7 @@ from `OrthoDB <http://www.orthodb.org/>`_.
 ========= ====================================================================
 Version   Description
 ========= ====================================================================
-0.10.0    * Major refactoring & add blast and busco rules. Include apptainer
-0.9.0     * Major refactoring to use wrappers + HTML report updates
+0.9.0    * Major refactoring to include apptainers, use wrappers
 0.8.5     * add multiqc and use newest version of sequana
 0.8.4     * update pipeline to use new pipetools features
 0.8.3     * fix requirements (spades -> spades.py)

@@ -76,6 +76,9 @@ class Options(argparse.ArgumentParser):
             help="maximum amount of memory to use for data  normalisation",
         )
 
+        self.add_argument("--run", default=False, action="store_true",
+            help="execute the pipeline directly")
+
     def parse_args(self, *args):
         args_list = list(*args)
         if "--from-project" in args_list:
@@ -149,6 +152,8 @@ def main(args=None):
     # file and save it.
     manager.teardown()
 
+    if options.run:
+        subprocess.Popen(["sh", '{}.sh'.format(NAME)], cwd=options.workdir)
 
 if __name__ == "__main__":
     main()
