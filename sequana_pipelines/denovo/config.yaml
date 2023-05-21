@@ -14,18 +14,20 @@ input_pattern: "*fastq.gz"
 assembler: "spades"
 
 apptainers:
-  blast: "https://zenodo.org/record/7335176/files/denovo_tools_0.0.2.img"
-  busco: "https://zenodo.org/record/7335176/files/denovo_tools_0.0.2.img"
-  bwa: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
-  digital_normalisation: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
-  freebayes: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
-  quast: "https://zenodo.org/record/5708848/files/quast_5.0.2.img"
-  prokka: "https://zenodo.org/record/5708864/files/prokka_1.14.5.img"
-  sambamba: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
-  samtools: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
-  seqkit: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
-  spades: "https://zenodo.org/record/7102074/files/sequana_tools_0.14.3.img"
+  blast: "https://zenodo.org/record/7848524/files/blast_2.12.0.img"
+  bwa: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
+  busco: "https://zenodo.org/record/7794877/files/busco_5.4.6.img"
+  digital_normalisation: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
+  freebayes: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
+  graphviz: "https://zenodo.org/record/7928262/files/graphviz_7.0.5.img"
+  quast: "https://zenodo.org/record/7848771/files/quast_5.2.0.img"
+  prokka: "https://zenodo.org/record/7946774/files/prokka_1.14.6.img"
+  sambamba: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
+  samtools: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
+  seqkit:  "https://zenodo.org/record/7821924/files/seqkit_2.4.0.img"
+  spades: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   unicycler: "https://zenodo.org/record/7335176/files/denovo_tools_0.0.2.img"
+
 
 ##############################################################################
 # Khmer - Digital Normalisation
@@ -57,7 +59,8 @@ digital_normalisation:
 #
 # :Parameters:
 #
-# - k: comma-separated list of k-mer sizes (must be odd and less than 128).
+# - k: comma-separated list of k-mer sizes (must be odd and less than 128). 
+#      use quote (sequanix requirements)
 # - preset: any preset in this list ["", "meta", "sc", "isolate", "metaplasmid", "metaviral", "rna", "rnaviral"].
 # - options: any options recognised by spades.py.
 # - memory: RAM limit for SPAdes in Gb (terminates if exceeded).
@@ -65,7 +68,7 @@ digital_normalisation:
 # - resources: computing resources needed to run the job on a cluster
 #
 spades:
-  k: 21,33,55,77,99,127
+  k: "21,33,55,77,99,127"
   preset: ""
   options: "--careful"
   memory: 64
