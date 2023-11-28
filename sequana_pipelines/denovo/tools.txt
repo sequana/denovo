@@ -1,0 +1,11 @@
+bwa
+filter-abund.py
+freebayes
+normalize-by-median.py
+picard
+prokka
+quast.py
+split-paired-reads.py
+spades.py
+sambamba
+samtools

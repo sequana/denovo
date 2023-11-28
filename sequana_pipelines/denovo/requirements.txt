@@ -1,9 +1,0 @@
-- bwa
-- freebayes
-- picard
-- prokka
-- quast.py
-- spades.py
-- sambamba
-- samtools
-- normalize-by-median.py
