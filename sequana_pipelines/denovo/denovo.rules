@@ -18,7 +18,6 @@ configfile: "config.yaml"
 
 
 manager = PipelineManager("denovo", config, schema="schema.yaml")
-sequana_wrapper_branch = "main"
 
 
 rule denovo:
@@ -98,7 +97,7 @@ def get_filtered_bam(wildcards):
 
 def get_sequana_coverage_input(config):
     input_file = {
-        "bed": "{sample}/samtools_depth/{sample}.bed",
+        "bed": "{sample}/double_bed/{sample}.bed",
         "fasta": "{sample}/seqkit_filter/{sample}.fasta",
     }
     if config["prokka"]["do"]:
@@ -140,12 +139,14 @@ rule digital_normalisation:
         cutoff=config["digital_normalisation"]["cutoff"],
         m=config["digital_normalisation"]["max_memory_usage"],
         options=config["digital_normalisation"]["options"]
-    threads: config["digital_normalisation"]["threads"]
-    container: config["apptainers"]["digital_normalisation"]
+    threads:
+        config["digital_normalisation"]["threads"]
+    container:
+        config["apptainers"]["digital_normalisation"]
     resources:
         **config["digital_normalisation"]["resources"],
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/digital_normalisation"
+        f"{manager.wrappers}/wrappers/digital_normalisation"
 
 
 rule spades:
@@ -161,12 +162,14 @@ rule spades:
         memory=config["spades"]["memory"],
     log:
         "{sample}/logs/spades.log",
-    threads: config["spades"]["threads"]
-    container: config["apptainers"]["spades"]
+    threads:
+        config["spades"]["threads"]
+    container:
+        config["apptainers"]["spades"]
     resources:
         **config["spades"]["resources"],
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/spades"
+        f"{manager.wrappers}/wrappers/spades"
 
 
 rule unicycler:
@@ -179,12 +182,14 @@ rule unicycler:
         options=config["unicycler"]["options"],
     log:
         "{sample}/logs/unicycler.log",
-    threads: config["unicycler"]["threads"]
-    container: config["apptainers"]["unicycler"]
+    threads:
+        config["unicycler"]["threads"]
+    container:
+        config["apptainers"]["unicycler"]
     resources:
         **config["unicycler"]["resources"],
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/unicycler"
+        f"{manager.wrappers}/wrappers/unicycler"
 
 rule quast:
     input:
@@ -198,10 +203,12 @@ rule quast:
         reference=config["quast"]["reference_file"],
         annotation=config["quast"]["annotation_file"],
         options=config["quast"]["options"],
-    threads: config["quast"]["threads"]
-    container: config["apptainers"]["quast"]
+    threads:
+        config["quast"]["threads"]
+    container:
+        config["apptainers"]["quast"]
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/quast"
+        f"{manager.wrappers}/wrappers/quast"
 
 
 rule seqkit_filter:
@@ -213,7 +220,8 @@ rule seqkit_filter:
         "{sample}/logs/seqkit_filter.log",
     params:
         config["seqkit_filter"]["threshold"],
-    container: config["apptainers"]["seqkit"]
+    container:
+        config["apptainers"]["seqkit"]
     shell:
         """
         seqkit seq -i --id-regexp "^(.+)_cov.*" --min-len {params} {input} --out-file {output} > {log} 2>&1
@@ -229,10 +237,12 @@ rule prokka:
         "{sample}/logs/prokka.log",
     params:
         options=create_prokka_option(config["prokka"])
-    threads: config["prokka"]["threads"]
-    container: config["apptainers"]["prokka"]
+    threads:
+        config["prokka"]["threads"]
+    container:
+        config["apptainers"]["prokka"]
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/prokka"
+        f"{manager.wrappers}/wrappers/prokka"
 
 
 rule busco:
@@ -247,10 +257,12 @@ rule busco:
         lineage=config["busco"]["lineage"],
         short_summary_filename="short_summary_{sample}.txt",
         options=config["busco"]["options"],
-    threads: config["busco"]["threads"]
-    container: config["apptainers"]["busco"]
+    threads:
+        config["busco"]["threads"]
+    container:
+        config["apptainers"]["busco"]
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/busco"
+        f"{manager.wrappers}/wrappers/busco"
 
 
 rule bwa_index:
@@ -263,10 +275,12 @@ rule bwa_index:
         "{sample}/logs/bwa_index.log",
     params:
         index_algorithm=config["bwa"]["index_algorithm"],
-    threads: 2
-    container: config['apptainers']['bwa']
+    threads:
+        2
+    container:
+        config['apptainers']['bwa']
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/bwa/build"
+        f"{manager.wrappers}/wrappers/bwa/build"
 
 
 rule bwa:
@@ -281,10 +295,12 @@ rule bwa:
         "{sample}/logs/bwa_mem.log",
     params:
         options=config["bwa"]["options"],
-    threads: config["bwa"]["threads"]
-    container: config['apptainers']["bwa"]
+    threads:
+        config["bwa"]["threads"]
+    container:
+        config['apptainers']["bwa"]
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/bwa/align"
+        f"{manager.wrappers}/wrappers/bwa/align"
 
 
 rule sambamba_markdup:
@@ -296,9 +312,10 @@ rule sambamba_markdup:
         "{sample}/logs/sambamba_markdup.log",
     params:
         remove_duplicates=config["sambamba_markdup"]["remove"],
-    container: config['apptainers']["sambamba"]
+    container:
+        config['apptainers']["sambamba"]
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/sambamba_markdup"
+        f"{manager.wrappers}/wrappers/sambamba_markdup"
 
 
 rule sambamba_filter:
@@ -310,9 +327,10 @@ rule sambamba_filter:
         "{sample}/logs/sambamba_filter.log",
     params:
         threshold=config["sambamba_filter"]["threshold"],
-    container: config['apptainers']["sambamba"]
+    container:
+        config['apptainers']["sambamba"]
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/sambamba_filter"
+        f"{manager.wrappers}/wrappers/sambamba_filter"
 
 
 rule freebayes:
@@ -326,9 +344,10 @@ rule freebayes:
     params:
         ploidy=config["freebayes"]["ploidy"],
         options=config["freebayes"]["options"],
-    container: config['apptainers']["freebayes"]
+    container:
+        config['apptainers']["freebayes"]
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/freebayes"
+        f"{manager.wrappers}/wrappers/freebayes"
 
 
 rule freebayes_vcf_filter:
@@ -340,43 +359,85 @@ rule freebayes_vcf_filter:
         html="{sample}/variant_calling.html",
     params:
         filter_dict=config["vcf_filter"],
-    container: config['apptainers']["freebayes"]
+    container:
+        config['apptainers']["freebayes"]
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/freebayes_vcf_filter"
+        f"{manager.wrappers}/wrappers/freebayes_vcf_filter"
 
 
-rule samtools_depth:
-    input:
-        "{sample}/sambamba_filter/{sample}.sorted.bam",
-    output:
-        "{sample}/samtools_depth/{sample}.bed",
-    log:
-        "{sample}/logs/samtools_depth.log",
-    container: config['apptainers']['samtools']
-    wrapper:
-        f"{sequana_wrapper_branch}/wrappers/samtools_depth"
+if config["sequana_coverage"]["do"]:
 
 
-rule sequana_coverage:
-    input:
-        **get_sequana_coverage_input(config),
-    output:
-        "{sample}/sequana_coverage/sequana_coverage.html",
-    log:
-        "{sample}/logs/sequana_coverage.log",
-    params:
-        circular=config["sequana_coverage"]["circular"],
-        window_size=config["sequana_coverage"]["window_size"],
-        chunksize=config["sequana_coverage"]["chunksize"],
-        double_threshold=config["sequana_coverage"]["double_threshold"],
-        gc_window_size=config["sequana_coverage"]["gc_window_size"],
-        high_threshold=config["sequana_coverage"]["high_threshold"],
-        low_threshold=config["sequana_coverage"]["low_threshold"],
-        mixture_models=config["sequana_coverage"]["mixture_models"],
-    resources: **config["sequana_coverage"]["resources"]
-    wrapper:
-        f"{sequana_wrapper_branch}/wrappers/sequana_coverage"
+    rule bedtools_depth:
+        input:
+            "{sample}/sambamba_filter/{sample}.sorted.bam",
+        output:
+            "{sample}/bedtools_depth/{sample}.bed"
+        log:
+            "{sample}/bedtools_depth/{sample}.log"
+        resources:
+            **config["sequana_coverage"]["resources"]
+        container:
+            config['apptainers']['bedtools']
+        shell:
+            """
+            bedtools genomecov -d -ibam {input} > {output}
+            """
 
+
+    rule samtools_depth:
+        input:
+            "{sample}/sambamba_filter/{sample}.sorted.bam",
+        output:
+            "{sample}/samtools_depth/{sample}.bed",
+        log:
+            "{sample}/logs/samtools_depth.log",
+        container:
+            config['apptainers']['samtools']
+        wrapper:
+            f"{manager.wrappers}/wrappers/samtools_depth"
+
+    rule double_bed:
+        input:
+            bed1="{sample}/bedtools_depth/{sample}.bed",
+            bed2="{sample}/samtools_depth/{sample}.bed"
+        output:
+            "{sample}/double_bed/{sample}.bed"
+        run:
+            with open(input.bed1) as fin1, open(input.bed2) as fin2, open(output[0], "w") as fout:
+                for line1, line2 in zip(fin1, fin2):
+                    name1, pos1, count1 = line1.split()
+                    name2, pos2, count2 = line2.split()
+                    assert name1==name2
+                    assert pos1==pos2
+                    fout.write(f"{name1}\t{pos1}\t{count1}\t{count2}\n")
+
+
+    rule sequana_coverage:
+        input:
+            **get_sequana_coverage_input(config),
+        output:
+            "{sample}/sequana_coverage/sequana_coverage.html",
+        log:
+            "{sample}/logs/sequana_coverage.log",
+        params:
+            annotation="", #config["general"]["annotation_file"],
+            circular=config["sequana_coverage"]["circular"],
+            chunksize=config["sequana_coverage"]["chunksize"],
+            double_threshold=config["sequana_coverage"]["double_threshold"],
+            gc_window_size=config["sequana_coverage"]["gc_window_size"],
+            high_threshold=config["sequana_coverage"]["high_threshold"],
+            low_threshold=config["sequana_coverage"]["low_threshold"],
+            mixture_models=config["sequana_coverage"]["mixture_models"],
+            output_directory="{sample}/sequana_coverage",
+            options=config["sequana_coverage"]["options"],
+            window_size=config["sequana_coverage"]["window_size"],
+        container:
+            config["apptainers"]["sequana_coverage"]
+        resources:
+            **config["sequana_coverage"]["resources"]
+        wrapper:
+            f"{manager.wrappers}/wrappers/sequana_coverage"
 
 
 rule seqkit_head:
@@ -386,7 +447,8 @@ rule seqkit_head:
         "{sample}/subset_contigs/{sample}.subset.fasta"
     params:
         n_first = config["seqkit_head"]["n_first"]
-    container: config['apptainers']["seqkit"]
+    container:
+        config['apptainers']["seqkit"]
     shell:
         """
         seqkit head -n {params.n_first} -o {output} {input}
@@ -411,7 +473,7 @@ rule blast:
         **config["blast"]["resources"],
     container: config["apptainers"]["blast"]
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/blast/blast"
+        f"{manager.wrappers}/wrappers/blast/blast"
 
 
 rule rulegraph:
@@ -424,7 +486,7 @@ rule rulegraph:
         mapper=get_rulegraph_mapper(config),
         required_local_files=["schema.yaml"],
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/rulegraph"
+        f"{manager.wrappers}/wrappers/rulegraph"
 
 
 rule dot2svg:
@@ -480,17 +542,18 @@ rule multiqc:
     params:
         options=config["multiqc"]["options"],
         input_directory=config["multiqc"]["input_directory"],
+        config_file=config['multiqc']['config_file'],
         modules=config["multiqc"]["modules"],
     log:
         "multiqc/multiqc.log",
+    container:
+        config["apptainers"]["multiqc"]
     wrapper:
-        f"{sequana_wrapper_branch}/wrappers/multiqc"
+        f"{manager.wrappers}/wrappers/multiqc"
 
 
 # these rules don't need to be submit on a node.
-localrules:
-    rulegraph,
-    multiqc,
+localrules: rulegraph
 
 
 onsuccess:
@@ -500,7 +563,7 @@ onsuccess:
     import pandas as pd
 
     from sequana.utils.datatables_js import DataTable
-    from sequana.modules_report.summary import SummaryModule, SummaryModule2
+    from sequana.modules_report.summary import SequanaReport
     from sequana.utils import config as conf
     from sequana import logger
 
@@ -544,13 +607,11 @@ onsuccess:
     intro += dt.create_javascript_function() + dt.create_datatable()
 
 
-    data = {
-        "name": "denovo",
-        "rulegraph": ".sequana/rulegraph.svg",
-    }
 
     conf.output_dir = os.path.abspath(".")
-    s = SummaryModule2(data, intro=intro, workflow=False)
+
+    data = manager.getmetadata()
+    s = SequanaReport(data, intro=intro, workflow=False)
 
     # create summary pipeline for each samples
     report_dir_format = "{sample}"
@@ -562,8 +623,8 @@ onsuccess:
         if manager.config.freebayes.do:
             conf.summary_sections.append(
                 {
-                    "name": "sequana coverage",
-                    "anchor": "sequana_coverage",
+                    "name": "Variant analysis",
+                    "anchor": "variant",
                     "content": f'To get information about variants found in your sample, please visit the <a href="variant_calling.html">variant</a> page.',
                 }
             )
@@ -597,14 +658,12 @@ onsuccess:
             }
         )
 
-        SummaryModule(json.loads(open(filename).read()))
+
+        SequanaReport(json.loads(open(filename).read()))
 
     shell("chmod -R g+w .")
     manager.teardown()
-
+    manager.clean_multiqc(rules.multiqc.output[0])
 
 onerror:
-    from sequana_pipetools.errors import PipeError
-
-    p = PipeError("denovo")
-    p.status()
+    manager.onerror()

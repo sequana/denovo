@@ -1,5 +1,9 @@
 type: map
 mapping:
+  "sequana_wrappers":
+    type: str
+    required: true
+
   "input_directory":
     type: str
     required: True
@@ -44,6 +48,8 @@ mapping:
       "resources":
         type: any
         required: true
+
+
 
   "spades":
     type: map
@@ -100,6 +106,9 @@ mapping:
       "threads":
         type: int
         required: true
+      "resources":
+        type: any
+        required: true
 
   prokka:
     type: map
@@ -122,12 +131,18 @@ mapping:
       "threads":
         type: int
         required: true
+      "resources":
+        type: any
+        required: true
 
   "seqkit_filter":
     type: map
     mapping:
       "threshold":
         type: int
+        required: true
+      "resources":
+        type: any
         required: true
 
   "bwa":
@@ -146,6 +161,9 @@ mapping:
       "tmp_directory":
         type: str
         required: false
+      "resources":
+        type: any
+        required: true
 
   "sambamba_filter":
     type: map
@@ -155,6 +173,9 @@ mapping:
         required: true
       "threshold":
         type: int
+        required: true
+      "resources":
+        type: any
         required: true
 
   "sambamba_markdup":
@@ -169,6 +190,9 @@ mapping:
       "tmp_directory":
         type: str
         required: false
+      "resources":
+        type: any
+        required: true
 
   "sequana_coverage":
     type: map
@@ -186,6 +210,9 @@ mapping:
         range: { min: 0, max: 1 }
         required: false
         default: 0.5
+      "genbank_file":
+        type: str
+        required: False
       "high_threshold":
         type: float
         range: { min: 2 }
@@ -200,6 +227,9 @@ mapping:
         type: int
         required: false
         default: 5000000
+      "reference_file":
+        type: str
+        required: False
       "window_size":
         default: 20001
         type: int
@@ -207,6 +237,9 @@ mapping:
       "gc_window_size":
         type: int
         range: { min: 2 }
+      "options":
+        type: text
+        required: false
       "resources":
         type: any
         required: true
@@ -223,6 +256,9 @@ mapping:
       "options":
         type: str
         required: false
+      "resources":
+        type: any
+        required: true
 
   "vcf_filter":
     type: map
@@ -262,6 +298,9 @@ mapping:
         required: false
       "threads":
         type: int
+        required: true
+      "resources":
+        type: any
         required: true
 
   "seqkit_head":
@@ -312,4 +351,7 @@ mapping:
         required: false
       "input_directory":
         type: str
+        required: true
+      "resources":
+        type: any
         required: true

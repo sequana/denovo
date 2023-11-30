@@ -8,24 +8,29 @@
 # use it, otherwise use input_samples.
 # ============================================================================
 #
+sequana_wrappers: "v23.11.18"
+
 input_directory: ""
 input_readtag: _R[12]_
 input_pattern: "*fastq.gz"
 assembler: "spades"
 
 apptainers:
+  bedtools: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   blast: "https://zenodo.org/record/7848524/files/blast_2.12.0.img"
   bwa: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   busco: "https://zenodo.org/record/7794877/files/busco_5.4.6.img"
   digital_normalisation: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   freebayes: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   graphviz: "https://zenodo.org/record/7928262/files/graphviz_7.0.5.img"
+  multiqc: "https://zenodo.org/record/10205070/files/multiqc_1.16.0.img"
   quast: "https://zenodo.org/record/7848771/files/quast_5.2.0.img"
   prokka: "https://zenodo.org/record/7946774/files/prokka_1.14.6.img"
   sambamba: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   samtools: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   seqkit:  "https://zenodo.org/record/7821924/files/seqkit_2.4.0.img"
   spades: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
+  sequana_coverage: "https://zenodo.org/record/10209929/files/sequana_0.16.1.img"
   unicycler: "https://zenodo.org/record/7335176/files/denovo_tools_0.0.2.img"
 
 
@@ -44,15 +49,14 @@ apptainers:
 # - resources: computing resources needed to run the job on a cluster
 #
 digital_normalisation:
-  do: yes
-  ksize: 20
-  cutoff: 20
-  max_memory_usage: 4e9
-  threads: 4
-  options: ""
-
-  resources:
-    mem: 4G
+    do: yes
+    ksize: 20
+    cutoff: 20
+    max_memory_usage: 4e9
+    threads: 4
+    options: ""
+    resources:
+        mem: 4G
 
 ##############################################################################
 # Spades - De Novo Assembly
@@ -68,13 +72,13 @@ digital_normalisation:
 # - resources: computing resources needed to run the job on a cluster
 #
 spades:
-  k: "21,33,55,77,99,127"
-  preset: ""
-  options: "--careful"
-  memory: 64
-  threads: 8
-  resources:
-    mem: 64G
+    k: "21,33,55,77,99,127"
+    preset: ""
+    options: "--careful"
+    memory: 64
+    threads: 8
+    resources:
+        mem: 64G
 
 ##############################################################################
 # Unicycler - De Novo Assembly
@@ -87,11 +91,11 @@ spades:
 # - resources: computing resources needed to run the job on a cluster
 #
 unicycler:
-  mode: "normal"
-  options: ""
-  threads: 8
-  resources:
-    mem: 64G
+    mode: "normal"
+    options: ""
+    threads: 8
+    resources:
+        mem: 64G
 
 ##############################################################################
 # Quast - Compute metrics to assess assembly
@@ -105,10 +109,12 @@ unicycler:
 # - resources: computing resources needed to run the job on a cluster - options: Any options recognised by quast.py.
 #
 quast:
-  reference_file: ""
-  annotation_file: ""
-  threads: 4
-  options: ""
+    reference_file: ""
+    annotation_file: ""
+    threads: 4
+    options: ""
+    resources:
+        mem: 8G
 
 ##############################################################################
 # Prokka - Annotate the genome assembly
@@ -123,12 +129,14 @@ quast:
 # - options: Any options recognised by Prokka.
 #
 prokka:
-  do: yes
-  kingdom: Bacteria
-  genus: ""
-  species: ""
-  threads: 4
-  options: ""
+    do: yes
+    kingdom: Bacteria
+    genus: ""
+    species: ""
+    threads: 4
+    options: ""
+    resources:
+        mem: 8G
 
 ##############################################################################
 # Busco
@@ -144,6 +152,8 @@ busco:
     lineage: ''
     options: '--offline'
     threads: 4
+    resources:
+        mem: 8G
 
 ##############################################################################
 # Seqkit filter
@@ -154,7 +164,9 @@ busco:
 #       is not kept.
 #
 seqkit_filter:
-  threshold: 500
+    threshold: 500
+    resources:
+        mem: 8G
 
 
 ##############################################################################
@@ -168,10 +180,12 @@ seqkit_filter:
 # - tmp_directory: temporary directory
 #
 bwa:
-  index_algorithm: is
-  options: -T 30
-  threads: 4
-  tmp_directory:
+    index_algorithm: is
+    options: -T 30
+    threads: 4
+    tmp_directory:
+    resources:
+        mem: 8G
 
 ##############################################################################
 # Sambamba - Marks or removes duplicates
@@ -183,9 +197,11 @@ bwa:
 # - tmp_directory: set the temporary directory.
 #
 sambamba_markdup:
-  do: true
-  remove: false
-  tmp_directory:
+    do: true
+    remove: false
+    tmp_directory:
+    resources:
+        mem: 8G
 
 ##############################################################################
 # Filter reads with a mapping score lower than an integer
@@ -196,8 +212,10 @@ sambamba_markdup:
 # - threshold: mapping score threshold (between 0 and 60).
 #
 sambamba_filter:
-  do: true
-  threshold: 30
+    do: true
+    threshold: 30
+    resources:
+        mem: 8G
 
 ##############################################################################
 # Sequana coverage - Analyse the coverage of the mapping
@@ -213,17 +231,22 @@ sambamba_filter:
 # - gc_window_size: window size to compute GC content.
 #
 sequana_coverage:
-  do: yes
-  mixture_models: 2
-  circular: false
-  window_size: 40001
-  chunksize: 5000000
-  low_threshold: -4.0
-  high_threshold: 4.0
-  gc_window_size: 201
-  double_threshold: 0.5
-  resources:
-    mem: 12G
+    do: true
+    circular: false
+    window_size: 40001
+    chunksize: 5000000
+    double_threshold: 0.5
+    gc_window_size: 201
+    genbank_file: ''
+    high_threshold: 4.0
+    low_threshold: -4.0
+    mixture_models: 2
+    reference_file: ''
+    options: ""
+    resources:
+        mem: 12G
+
+
 
 ##############################################################################
 # Freebayes - Variant caller
@@ -235,9 +258,11 @@ sequana_coverage:
 # - options: any options recognised by freebayes.
 #
 freebayes:
-  do: yes
-  ploidy: 1
-  options: ""
+    do: yes
+    ploidy: 1
+    options: ""
+    resources:
+        mem: 8G
 
 ##############################################################################
 # Filter VCF
@@ -252,12 +277,12 @@ freebayes:
 # - strand_ratio: threshold for minimum strand ratio between 0 and 0.5.
 #
 vcf_filter:
-  freebayes_score: 10
-  frequency: 0.7
-  min_depth: 6
-  forward_depth: 3
-  reverse_depth: 3
-  strand_ratio: 0.2
+    freebayes_score: 10
+    frequency: 0.7
+    min_depth: 6
+    forward_depth: 3
+    reverse_depth: 3
+    strand_ratio: 0.2
 
 
 ##############################################################################
@@ -267,7 +292,7 @@ vcf_filter:
 #
 # - n_first: Keep only n first contigs
 seqkit_head:
-  n_first: 100
+    n_first: 100
 
 ##############################################################################
 # Blast
@@ -280,17 +305,19 @@ seqkit_head:
 # - options: any options recognised by `blastn` cli (except --outfmt)
 # - threads: Number of threads to use.
 blast:
-  do: false
-  blastdb: ""
-  evalue: "1e-10"
-  outfmt: "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore staxids stitle"
-  options: "-max_target_seqs 5"
-  threads: 4
-  resources:
-    mem: 12G
+    do: false
+    blastdb: ""
+    evalue: "1e-10"
+    outfmt: "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore staxids stitle"
+    options: "-max_target_seqs 5"
+    threads: 4
+    resources:
+        mem: 12G
 
 multiqc:
-  options: -p -f
-  modules:
-  input_directory: .
-  config_file: "multiqc_config.yaml"
+    options: -p -f
+    modules:
+    input_directory: .
+    config_file: "multiqc_config.yaml"
+    resources:
+        mem: 8G

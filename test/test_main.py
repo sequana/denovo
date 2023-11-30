@@ -3,6 +3,8 @@ import os
 import tempfile
 import subprocess
 import sys
+from click.testing import CliRunner
+from sequana_pipelines.denovo.main import main
 
 from . import test_dir
 
@@ -17,10 +19,12 @@ def test_standalone_subprocess():
 
 def test_standalone_script():
     directory = tempfile.TemporaryDirectory()
-    import sequana_pipelines.denovo.main as m
-    sys.argv = ["test", "--input-directory", sharedir, "--working-directory",
-        directory.name, "--force"]
-    m.main()
+
+    runner = CliRunner()
+    results = runner.invoke(main, ["--input-directory", sharedir, "--working-directory", 
+        directory.name, "--force"])
+    assert results.exit_code == 0
+
 
 def _test_full():
 
