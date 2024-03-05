@@ -123,6 +123,7 @@ from `OrthoDB <http://www.orthodb.org/>`_.
 ========= ====================================================================
 Version   Description
 ========= ====================================================================
+0.11.0    * add checkm
 0.10.0    * use click / include multiqc apptainer
 0.9.0     * Major refactoring to include apptainers, use wrappers
 0.8.5     * add multiqc and use newest version of sequana

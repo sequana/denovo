@@ -8,7 +8,7 @@
 # use it, otherwise use input_samples.
 # ============================================================================
 #
-sequana_wrappers: "v23.11.18"
+sequana_wrappers: "v24.1.14"
 
 input_directory: ""
 input_readtag: _R[12]_
@@ -20,6 +20,7 @@ apptainers:
   blast: "https://zenodo.org/record/7848524/files/blast_2.12.0.img"
   bwa: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   busco: "https://zenodo.org/record/7794877/files/busco_5.4.6.img"
+  checkm: "https://zenodo.org/record/10040946/files/checkm_1.2.2.img"
   digital_normalisation: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   freebayes: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   graphviz: "https://zenodo.org/record/7928262/files/graphviz_7.0.5.img"
@@ -31,8 +32,7 @@ apptainers:
   seqkit:  "https://zenodo.org/record/7821924/files/seqkit_2.4.0.img"
   spades: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   sequana_coverage: "https://zenodo.org/record/10209929/files/sequana_0.16.1.img"
-  unicycler: "https://zenodo.org/record/7335176/files/denovo_tools_0.0.2.img"
-
+  unicycler: "https://zenodo.org/record/10469285/files/unicycler_0.5.0.img"
 
 ##############################################################################
 # Khmer - Digital Normalisation
@@ -154,6 +154,23 @@ busco:
     threads: 4
     resources:
         mem: 8G
+
+
+##############################################################################
+# checkm
+#
+# :Parameters:
+#
+# - taxon_rank: one of genus, species, etc
+# - taxon_name: type 'checkm taxon_list'
+checkm:
+    do: false
+    taxon_rank: genus
+    taxon_name:
+    threads: 4
+    resources:
+        mem: 4G
+
 
 ##############################################################################
 # Seqkit filter

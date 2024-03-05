@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "sequana-denovo"
-version = "0.10.0"
+version = "0.11.0"
 description = "Multi-sample denovo assembly of FastQ sequences (short read)"
 authors = ["Sequana Team"]
 license = "BSD-3"

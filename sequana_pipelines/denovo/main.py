@@ -35,6 +35,9 @@ help = init_click(
             "--spades-memory",
             "--digital-normalisation-max-memory-usage",
         ],
+
+        "Pipeline Specific Completeness": ["--checkm-rank", "--checkm-name", "--busco-lineage"],
+
     },
 )
 
@@ -56,6 +59,26 @@ help = init_click(
             default=4e9,
             help="maximum amount of memory to use for data  normalisation",
         )
+@click.option(
+    "--busco-lineage",
+    "lineage",
+    help="Lineage or path to lineage file for BUSCO. Note that we support only version 5 of the BUSCO lineage.",
+)
+
+
+@click.option(
+    "--checkm-rank",
+    default="genus",
+    show_default=True,
+    help="For bacteria, checkm can be used. Usually at the genus level. can be set to 'domain', 'phylum', 'class', 'order', 'family', 'genus', 'species'. ",
+)
+@click.option(
+    "--checkm-name",
+    default=None,
+    help="checkm taxon name. Type checkm taxon_list for a complete list. You can also check the LORA wiki page here: https://github.com/sequana/lora/wiki/checkm",
+)
+
+
 def main(**options):
     # the real stuff is here
     manager = SequanaManager(options, NAME)
@@ -84,6 +107,16 @@ def main(**options):
     else:
         cfg.prokka.do = True
     cfg.prokka.kingdom = options.prokka_kingdom
+
+    # checkm
+    if options.checkm_name and options.checkm_rank:
+        cfg.checkm["do"] = True
+        cfg.checkm["taxon_rank"] = options.checkm_rank
+        cfg.checkm["taxon_name"] = options.checkm_name
+
+    if options.lineage:
+        cfg.busco["lineage"] = options.lineage
+
 
     # ------------------------------------------------------ coverage
     if options.sequana_coverage_circular:
