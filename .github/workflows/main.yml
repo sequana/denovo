@@ -5,10 +5,11 @@ on:
     branches:
       - main
       - dev
+  workflow_dispatch:
   pull_request:
     branches-ignore: []
   schedule:
-    - cron: '0 0 * * SUN'
+    - cron: '0 0 20 * *'
 
 jobs:
   build-linux:
@@ -16,7 +17,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        python: [3.7, 3.8, 3.9]
+        python: [3.8, 3.9, '3.10']
       fail-fast: false
 
 
@@ -39,7 +40,14 @@ jobs:
     - name: install package itself
       shell: bash -l {0}
       run: |
-        pip install .[testing]
+        pip install .
+        pip install "pulp==2.7.0" --no-deps
+
+
+    - name: Install dependencies
+      shell: bash -l {0}
+      run: |
+        pip install coveralls pytest-cov pytest pytest-xdist
 
     - name: testing
       shell: bash -l {0}
