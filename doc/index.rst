@@ -3,10 +3,10 @@ Sequana denovo pipeline documentation
 
 |version|, |today|, status: production
 
-The **denovo** pipeline is a `Sequana <https://github.com/sequana/sequana>`_ pipeline. You can find the source code 
+The **denovo** pipeline is a `Sequana <https://github.com/sequana/sequana>`_ pipeline. You can find the source code
 on  `https://github.com/sequana/sequana_denovo <https://github.com/sequana/sequana_denovo/>`_. Would you have issues
-about the code, usage or lack of information, please fill a report 
-on `Sequana itself <https://github.com/sequana/sequana/issues>`_ indicating the pipeline name (We centralized all 
+about the code, usage or lack of information, please fill a report
+on `Sequana itself <https://github.com/sequana/sequana/issues>`_ indicating the pipeline name (We centralized all
 pipelines issues on **Sequana** repository only so as to be more responsive).
 
 If you use **Sequana**, please do not forget to cite us:

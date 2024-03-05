@@ -46,15 +46,15 @@ process may be long::
 ::
 
     sequana_denovo --help
-    sequana_denovo --input-directory DATAPATH 
+    sequana_denovo --input-directory DATAPATH
 
-This creates a directory with the pipeline and configuration file. You will then need 
+This creates a directory with the pipeline and configuration file. You will then need
 to execute the pipeline::
 
     cd denovo
     sh denovo.sh  # for a local run
 
-This launch a snakemake pipeline. If you are familiar with snakemake, you can 
+This launch a snakemake pipeline. If you are familiar with snakemake, you can
 retrieve the pipeline itself and its configuration files and then execute the pipeline yourself with specific parameters::
 
     snakemake -s denovo.smk -c config.yaml --cores 4 --stats stats.txt
@@ -130,6 +130,6 @@ Version   Description
 0.8.4     * update pipeline to use new pipetools features
 0.8.3     * fix requirements (spades -> spades.py)
 0.8.2     * fix readtag, update config to account for new coverage setup
-0.8.1 
+0.8.1
 0.8.0     **First release.**
 ========= ====================================================================
