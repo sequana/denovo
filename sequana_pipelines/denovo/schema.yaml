@@ -49,6 +49,26 @@ mapping:
         type: any
         required: true
 
+  "checkm":
+    type: map
+    mapping:
+      "do":
+        type: bool
+        required: true
+      "threads":
+        type: int
+        required: true
+      "resources":
+        type: any
+        required: true
+      "taxon_rank":
+        type: str
+        required: true
+        enum: ['domain', 'phylum', 'class', 'order', 'family', 'genus', 'species']
+      "taxon_name":
+        type: str
+        required: true
+
 
 
   "spades":
@@ -284,7 +304,7 @@ mapping:
 
   "busco":
     type: map
-    func: ext_map_optionnal
+    func: ext_map_optional
     mapping:
       "do":
         type: bool
@@ -312,7 +332,7 @@ mapping:
 
   "blast":
     type: map
-    func: ext_map_optionnal
+    func: ext_map_optional
     mapping:
       "do":
         type: bool
