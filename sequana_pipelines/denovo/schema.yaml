@@ -185,6 +185,13 @@ mapping:
         type: any
         required: true
 
+  "bwa_index":
+    type: map
+    mapping:
+      "resources":
+        type: any
+        required: true
+
   "sambamba_filter":
     type: map
     mapping:

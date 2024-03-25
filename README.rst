@@ -123,6 +123,7 @@ from `OrthoDB <http://www.orthodb.org/>`_.
 ========= ====================================================================
 Version   Description
 ========= ====================================================================
+0.11.1    * Fix missing resources for quast/prokka/bwa_index
 0.11.0    * add checkm
 0.10.0    * use click / include multiqc apptainer
 0.9.0     * Major refactoring to include apptainers, use wrappers

@@ -204,6 +204,10 @@ bwa:
     resources:
         mem: 8G
 
+bwa_index:
+    resources:
+        mem: 8G
+
 ##############################################################################
 # Sambamba - Marks or removes duplicates
 #
