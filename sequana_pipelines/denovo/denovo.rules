@@ -120,7 +120,7 @@ def create_prokka_option(config):
 def get_rulegraph_mapper(config):
     mapper = {"quast": "../quast/icarus.html"}
     if config["sequana_coverage"]["do"]:
-        mapper.update({"sequana_coverage": "../sequana_coverage.html"})
+        mapper.update({"sequana_coverage": "../sequana_coverage/sequana_coverage.html"})
     if config["freebayes"]["do"]:
         mapper.update({"freebayes_vcf_filter": "../variant_calling.html"})
     return mapper
@@ -305,6 +305,8 @@ rule busco:
         config["busco"]["threads"]
     container:
         config["apptainers"]["busco"]
+    resources:
+        **config["busco"]["resources"],
     shell:
         manager.get_shell("busco/run", "v1")
 
@@ -450,6 +452,8 @@ rule freebayes:
         options=config["freebayes"]["options"],
     container:
         config['apptainers']["freebayes"]
+    resources:
+        **config["freebayes"]["resources"],
     shell:
         manager.get_shell("freebayes/run", "v1")
 
@@ -564,13 +568,15 @@ rule seqkit_head:
         "{sample}/seqkit_filter/{sample}.fasta"
     output:
         "{sample}/subset_contigs/{sample}.subset.fasta"
+    log:
+        "{sample}/logs/seqkit_head.log",
     params:
         n_first = config["seqkit_head"]["n_first"]
     container:
         config['apptainers']["seqkit"]
     shell:
         """
-        seqkit head -n {params.n_first} -o {output} {input}
+        seqkit head -n {params.n_first} -o {output} {input} > {log} 2>&1
         """
 
 
@@ -580,6 +586,8 @@ rule blast:
         blastdb=config["blast"]["blastdb"],
     output:
         "{sample}/blast/{sample}.tsv"
+    log:
+        "{sample}/logs/blast.log",
     params:
         blast_type="blastn",
         db_type="nt",
@@ -645,7 +653,7 @@ rule summary:
             "requirements": "",
             "snakefile": os.path.realpath(input["snakefile"]),
             "config": os.path.realpath(input["config"]),
-            "name": "variant_calling",
+            "name": "denovo",
         }
         js = json.dumps(summary, indent=4, sort_keys=True)
         with open(output["json"], "w") as fp:
@@ -672,7 +680,7 @@ rule multiqc:
 
 
 # these rules don't need to be submit on a node.
-localrules: rulegraph
+localrules: rulegraph, dot2svg
 
 
 onsuccess:

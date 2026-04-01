@@ -11,7 +11,6 @@
 #
 ##############################################################################
 import os
-import sys
 
 import rich_click as click
 
@@ -53,7 +52,7 @@ help = init_click(
 @click.option(
     "--digital-normalisation-max-memory-usage",
     default=4e9,
-    help="maximum amount of memory to use for data  normalisation",
+    help="maximum amount of memory to use for data normalisation",
 )
 @click.option(
     "--busco-lineage",
@@ -91,7 +90,7 @@ def main(**options):
 
     # ----------------------------------------------------- quast
     if options.quast_reference:
-        cfg.quast.reference = os.path.abspath(options.quast_reference)
+        cfg.quast.reference_file = os.path.abspath(options.quast_reference)
 
     # ----------------------------------------------------- prokka
     if options.skip_prokka:
