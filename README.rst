@@ -152,7 +152,7 @@ Changelog
 ========= ====================================================================
 Version   Description
 ========= ====================================================================
-0.11.0    * Drop Python 3.8/3.9; require Python >=3.10
+0.12.0    * Drop Python 3.8/3.9; require Python >=3.10
           * Drop click-completion dependency
           * Replace pkg_resources with importlib.metadata in __init__.py
           * Add exclude_pattern to config and schema
@@ -173,7 +173,8 @@ Version   Description
             reports; workflow=False on individual reports
           * Update environment.yml: add khmer, python>=3.10
           * Update tools.txt: add khmer scripts, graphviz
-          * add checkm
+0.11.1    * Fix missing resources for quast/prokka/bwa_index
+0.11.0    * add checkm
 0.10.0    * use click / include multiqc apptainer
 0.9.0     * Major refactoring to include apptainers, use wrappers
 0.8.5     * add multiqc and use newest version of sequana
