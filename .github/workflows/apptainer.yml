@@ -45,7 +45,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install .[testing]
+        pip install "snakemake>=8" .[testing]
 
     - name: install package itself
       run: |
