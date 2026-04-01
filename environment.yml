@@ -1,17 +1,29 @@
 name: sequana_denovo
 
 channels:
-- conda-forge
-- bioconda
-- defaults
-- r
+  - conda-forge
+  - bioconda
+  - defaults
 
 dependencies:
-- graphviz
-- freebayes
-- bwa
-- picard
-- prokka
-- spades
-- sambamba
-- samtools
+  - python>=3.10
+  - bedtools
+  - blast
+  - busco
+  - bwa
+  - checkm-genome
+  - freebayes
+  - khmer
+  - graphviz
+  - multiqc
+  - prokka
+  - quast
+  - sambamba
+  - samtools
+  - seqkit
+  - spades
+  - unicycler
+  - pip
+  - pip:
+    - sequana
+    - sequana_pipetools

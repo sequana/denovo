@@ -1,9 +1,5 @@
 type: map
 mapping:
-  "sequana_wrappers":
-    type: str
-    required: true
-
   "input_directory":
     type: str
     required: True
@@ -15,6 +11,10 @@ mapping:
   "input_pattern":
     type: str
     required: True
+
+  "exclude_pattern":
+    type: str
+    required: False
 
   "assembler":
     type: str
@@ -188,6 +188,9 @@ mapping:
   "bwa_index":
     type: map
     mapping:
+      "options":
+        type: str
+        required: false
       "resources":
         type: any
         required: true

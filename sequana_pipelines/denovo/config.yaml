@@ -8,11 +8,10 @@
 # use it, otherwise use input_samples.
 # ============================================================================
 #
-sequana_wrappers: "v24.1.14"
-
 input_directory: ""
 input_readtag: _R[12]_
 input_pattern: "*fastq.gz"
+exclude_pattern: ~
 assembler: "spades"
 
 apptainers:
@@ -21,7 +20,7 @@ apptainers:
   bwa: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   busco: "https://zenodo.org/record/7794877/files/busco_5.4.6.img"
   checkm: "https://zenodo.org/record/10040946/files/checkm_1.2.2.img"
-  digital_normalisation: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
+  digital_normalisation: "https://zenodo.org/record/13924243/files/khmer_2.1.1.img"
   freebayes: "https://zenodo.org/record/7341710/files/sequana_tools_0.14.5.img"
   graphviz: "https://zenodo.org/record/7928262/files/graphviz_7.0.5.img"
   multiqc: "https://zenodo.org/record/10205070/files/multiqc_1.16.0.img"
@@ -205,6 +204,7 @@ bwa:
         mem: 8G
 
 bwa_index:
+    options: ""
     resources:
         mem: 8G
 

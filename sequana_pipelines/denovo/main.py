@@ -13,10 +13,7 @@
 import os
 import sys
 
-import click_completion
 import rich_click as click
-
-click_completion.init()
 
 NAME = "denovo"
 

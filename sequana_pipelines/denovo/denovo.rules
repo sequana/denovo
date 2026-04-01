@@ -40,7 +40,7 @@ def requested_output(manager):
             )
         ]
     if config["prokka"]["do"]:
-        output_list += [expand("{sample}/prokka/{sample}.gbk", sample=manager.samples)]
+        output_list += [expand("{sample}/prokka/{sample}.gff", sample=manager.samples)]
     if config["freebayes"]["do"]:
         output_list += [
             expand("{sample}/vcf_filter/{sample}.filter.vcf", sample=manager.samples)
@@ -104,7 +104,7 @@ def get_sequana_coverage_input(config):
         "fasta": "{sample}/seqkit_filter/{sample}.fasta",
     }
     if config["prokka"]["do"]:
-        input_file["gbk"] = "{sample}/prokka/{sample}.gbk"
+        input_file["gff"] = "{sample}/prokka/{sample}.gff"
     return input_file
 
 
@@ -141,20 +141,57 @@ rule digital_normalisation:
         ksize=config["digital_normalisation"]["ksize"],
         cutoff=config["digital_normalisation"]["cutoff"],
         m=config["digital_normalisation"]["max_memory_usage"],
-        options=config["digital_normalisation"]["options"]
+        options=config["digital_normalisation"]["options"],
+        paired=manager.paired,
+        r2_in=lambda wildcards, input: input.fastq[1] if manager.paired else "",
+        out_r1=lambda wildcards, output: output.fastq[0],
+        out_r2=lambda wildcards, output: output.fastq[1] if manager.paired else "",
     threads:
         config["digital_normalisation"]["threads"]
     container:
         config["apptainers"]["digital_normalisation"]
     resources:
         **config["digital_normalisation"]["resources"],
-    wrapper:
-        f"{manager.wrappers}/wrappers/digital_normalisation"
+    shell:
+        """
+        graph={wildcards.sample}/digital_normalisation/{wildcards.sample}.graph
+
+        r1={input.fastq[0]}
+        [[ "$r1" == *.gz ]] && unpigz -p {threads} -fk $r1 && r1="${{r1%.gz}}"
+
+        if [ "{params.paired}" == "True" ]
+        then
+            r2={params.r2_in}
+            [[ "$r2" == *.gz ]] && unpigz -p {threads} -fk $r2 && r2="${{r2%.gz}}"
+            prefix=$(basename $r1 .fastq)
+
+            interleave-reads.py $r1 $r2 --output $prefix.pe >{log} 2>&1
+            normalize-by-median.py --paired --ksize {params.ksize} \
+                --cutoff {params.cutoff} -M {params.m} {params.options} \
+                --savegraph $graph $prefix.pe --output $prefix.pe.keep >>{log} 2>&1
+            filter-abund.py --threads {threads} -V $graph \
+                $prefix.pe.keep --output $prefix.pe.filter >>{log} 2>&1
+            extract-paired-reads.py $prefix.pe.filter \
+                --output-paired $prefix.pe --output-single $prefix.orphans >>{log} 2>&1
+            split-paired-reads.py $prefix.pe -1 {params.out_r1} -2 {params.out_r2} >>{log} 2>&1
+            rm -f $prefix.pe $prefix.pe.filter $prefix.pe.keep $prefix.orphans
+        else
+            prefix=$(basename $r1 .fastq)
+            normalize-by-median.py --ksize {params.ksize} \
+                --cutoff {params.cutoff} -M {params.m} {params.options} \
+                --savegraph $graph $r1 --output $prefix.se.keep >{log} 2>&1
+            filter-abund.py --threads {threads} -V $graph \
+                $prefix.se.keep --output $prefix.se.filter >>{log} 2>&1
+            mv $prefix.se.filter {params.out_r1}
+            rm -f $prefix.se.keep
+        fi
+        rm -f $graph
+        """
 
 
 rule spades:
     input:
-        get_normalized_fastq,
+        fastq=get_normalized_fastq,
     output:
         contigs="{sample}/spades/{sample}.contigs.fasta",
         scaffolds="{sample}/spades/{sample}.scaffolds.fasta",
@@ -171,13 +208,13 @@ rule spades:
         config["apptainers"]["spades"]
     resources:
         **config["spades"]["resources"],
-    wrapper:
-        f"{manager.wrappers}/wrappers/spades"
+    shell:
+        manager.get_shell("spades/run", "v1")
 
 
 rule unicycler:
     input:
-        get_normalized_fastq,
+        fastq=get_normalized_fastq,
     output:
         "{sample}/unicycler/{sample}.fasta"
     params:
@@ -191,8 +228,8 @@ rule unicycler:
         config["apptainers"]["unicycler"]
     resources:
         **config["unicycler"]["resources"],
-    wrapper:
-        f"{manager.wrappers}/wrappers/unicycler"
+    shell:
+        manager.get_shell("unicycler/run", "v1")
 
 rule quast:
     input:
@@ -212,8 +249,8 @@ rule quast:
         config["apptainers"]["quast"]
     resources:
         **config["quast"]["resources"],
-    wrapper:
-        f"{manager.wrappers}/wrappers/quast"
+    shell:
+        manager.get_shell("quast/run", "v1")
 
 
 rule seqkit_filter:
@@ -235,9 +272,9 @@ rule seqkit_filter:
 
 rule prokka:
     input:
-        "{sample}/seqkit_filter/{sample}.fasta",
+        assembly="{sample}/seqkit_filter/{sample}.fasta",
     output:
-        "{sample}/prokka/{sample}.gbk",
+        "{sample}/prokka/{sample}.gff",
     log:
         "{sample}/logs/prokka.log",
     params:
@@ -248,8 +285,8 @@ rule prokka:
         config["apptainers"]["prokka"]
     resources:
         **config["prokka"]["resources"],
-    wrapper:
-        f"{manager.wrappers}/wrappers/prokka"
+    shell:
+        manager.get_shell("prokka/run", "v1")
 
 
 rule busco:
@@ -268,13 +305,15 @@ rule busco:
         config["busco"]["threads"]
     container:
         config["apptainers"]["busco"]
-    wrapper:
-        f"{manager.wrappers}/wrappers/busco"
+    shell:
+        manager.get_shell("busco/run", "v1")
 
 
 rule checkm_marker:
     output:
         marker="marker"
+    log:
+        "logs/checkm_marker.log"
     threads:
          1
     container:
@@ -286,7 +325,7 @@ rule checkm_marker:
         **config["checkm"]["resources"],
     shell:
         """
-        checkm taxon_set {params.taxon_rank} "{params.taxon_name}" {output.marker}
+        checkm taxon_set {params.taxon_rank} "{params.taxon_name}" {output.marker} >{log} 2>&1
         """
 
 
@@ -297,6 +336,8 @@ rule checkm:
     output:
         results="{sample}/checkm/results.txt",
         png="{sample}/checkm/{sample}.marker_pos_plot.png"
+    log:
+        "{sample}/logs/checkm.log"
     params:
         taxon_rank=config["checkm"]["taxon_rank"],
         taxon_name=config["checkm"]["taxon_name"]
@@ -308,9 +349,9 @@ rule checkm:
         **config["checkm"]["resources"],
     shell:
         """
-        checkm analyze {input.marker} {wildcards.sample}/sorted_contigs/ {wildcards.sample}/checkm -x fasta -t {threads}
-        checkm qa marker {wildcards.sample}/checkm/ -f {output.results}
-        checkm marker_plot {wildcards.sample}/checkm/ {wildcards.sample}/sorted_contigs {wildcards.sample}/checkm/ -x fasta
+        checkm analyze {input.marker} {wildcards.sample}/sorted_contigs/ {wildcards.sample}/checkm -x fasta -t {threads} >{log} 2>&1
+        checkm qa marker {wildcards.sample}/checkm/ -f {output.results} >>{log} 2>&1
+        checkm marker_plot {wildcards.sample}/checkm/ {wildcards.sample}/sorted_contigs {wildcards.sample}/checkm/ -x fasta >>{log} 2>&1
         """
 
 
@@ -324,14 +365,15 @@ rule bwa_index:
         "{sample}/logs/bwa_index.log",
     params:
         index_algorithm=config["bwa"]["index_algorithm"],
+        options=config["bwa_index"]["options"],
     threads:
         2
     container:
         config['apptainers']['bwa']
     resources:
         **config["bwa_index"]["resources"],
-    wrapper:
-        f"{manager.wrappers}/wrappers/bwa/build"
+    shell:
+        manager.get_shell("bwa/build", "v1")
 
 
 rule bwa:
@@ -341,6 +383,8 @@ rule bwa:
         bwt="{sample}/seqkit_filter/{sample}.fasta.bwt",
         fai="{sample}/seqkit_filter/{sample}.fasta.fai",
     output:
+        sam=temp("{sample}/bwa/{sample}.sam"),
+        bam=temp("{sample}/bwa/{sample}.bam"),
         sorted="{sample}/bwa/{sample}.sorted.bam",
     log:
         "{sample}/logs/bwa_mem.log",
@@ -350,38 +394,47 @@ rule bwa:
         config["bwa"]["threads"]
     container:
         config['apptainers']["bwa"]
-    wrapper:
-        f"{manager.wrappers}/wrappers/bwa/align"
+    resources:
+        **config["bwa"]["resources"],
+    shell:
+        manager.get_shell("bwa/align", "v2")
 
 
 rule sambamba_markdup:
     input:
-        "{sample}/bwa/{sample}.sorted.bam",
+        bam="{sample}/bwa/{sample}.sorted.bam",
     output:
         bam="{sample}/sambamba_markdup/{sample}.sorted.bam",
     log:
         "{sample}/logs/sambamba_markdup.log",
     params:
         remove_duplicates=config["sambamba_markdup"]["remove"],
+        tmp_directory=config["sambamba_markdup"]["tmp_directory"] or "./tmp",
+        options="",
     container:
         config['apptainers']["sambamba"]
-    wrapper:
-        f"{manager.wrappers}/wrappers/sambamba_markdup"
+    resources:
+        **config["sambamba_markdup"]["resources"],
+    shell:
+        manager.get_shell("sambamba_markdup/run", "v1")
 
 
 rule sambamba_filter:
     input:
-        get_markdup_bam,
+        bam=get_markdup_bam,
     output:
-        "{sample}/sambamba_filter/{sample}.sorted.bam",
+        bam="{sample}/sambamba_filter/{sample}.sorted.bam",
     log:
         "{sample}/logs/sambamba_filter.log",
     params:
         threshold=config["sambamba_filter"]["threshold"],
+        options="",
     container:
         config['apptainers']["sambamba"]
-    wrapper:
-        f"{manager.wrappers}/wrappers/sambamba_filter"
+    resources:
+        **config["sambamba_filter"]["resources"],
+    shell:
+        manager.get_shell("sambamba_filter/run", "v1")
 
 
 rule freebayes:
@@ -389,7 +442,7 @@ rule freebayes:
         bam=get_filtered_bam,
         ref="{sample}/seqkit_filter/{sample}.fasta",
     output:
-        "{sample}/freebayes/{sample}.raw.vcf",
+        vcf="{sample}/freebayes/{sample}.raw.vcf",
     log:
         "{sample}/logs/freebayes.log",
     params:
@@ -397,8 +450,8 @@ rule freebayes:
         options=config["freebayes"]["options"],
     container:
         config['apptainers']["freebayes"]
-    wrapper:
-        f"{manager.wrappers}/wrappers/freebayes"
+    shell:
+        manager.get_shell("freebayes/run", "v1")
 
 
 rule freebayes_vcf_filter:
@@ -410,10 +463,21 @@ rule freebayes_vcf_filter:
         html="{sample}/variant_calling.html",
     params:
         filter_dict=config["vcf_filter"],
-    container:
-        config['apptainers']["freebayes"]
-    wrapper:
-        f"{manager.wrappers}/wrappers/freebayes_vcf_filter"
+    #container:
+    #    config['apptainers']["freebayes"]
+    run:
+        from sequana.freebayes_vcf_filter import VCF_freebayes
+        from sequana.modules_report.variant_calling import VariantCallingModule
+        from sequana.utils import config as seq_config
+
+        v = VCF_freebayes(input[0])
+        filter_v = v.filter_vcf(params["filter_dict"])
+        filter_v.to_vcf(output.vcf)
+        filter_v.to_csv(output.csv)
+
+        report_dir = output.html.rsplit("/", 1)[0]
+        seq_config.output_dir = report_dir
+        VariantCallingModule(filter_v)
 
 
 if config["sequana_coverage"]["do"]:
@@ -432,21 +496,25 @@ if config["sequana_coverage"]["do"]:
             config['apptainers']['bedtools']
         shell:
             """
-            bedtools genomecov -d -ibam {input} > {output}
+            bedtools genomecov -d -ibam {input} > {output} 2>{log}
             """
 
 
     rule samtools_depth:
         input:
-            "{sample}/sambamba_filter/{sample}.sorted.bam",
+            bam="{sample}/sambamba_filter/{sample}.sorted.bam",
         output:
             "{sample}/samtools_depth/{sample}.bed",
         log:
             "{sample}/logs/samtools_depth.log",
+        params:
+            options="",
         container:
             config['apptainers']['samtools']
-        wrapper:
-            f"{manager.wrappers}/wrappers/samtools_depth"
+        resources:
+            **config["sequana_coverage"]["resources"],
+        shell:
+            manager.get_shell("samtools_depth/run", "v1")
 
     rule double_bed:
         input:
@@ -487,8 +555,8 @@ if config["sequana_coverage"]["do"]:
             config["apptainers"]["sequana_coverage"]
         resources:
             **config["sequana_coverage"]["resources"]
-        wrapper:
-            f"{manager.wrappers}/wrappers/sequana_coverage"
+        shell:
+            manager.get_shell("sequana_coverage/run", "v1")
 
 
 rule seqkit_head:
@@ -523,8 +591,8 @@ rule blast:
     resources:
         **config["blast"]["resources"],
     container: config["apptainers"]["blast"]
-    wrapper:
-        f"{manager.wrappers}/wrappers/blast/blast"
+    shell:
+        manager.get_shell("blast/blast", "v1")
 
 
 rule rulegraph:
@@ -536,8 +604,8 @@ rule rulegraph:
         configname="config.yaml",
         mapper=get_rulegraph_mapper(config),
         required_local_files=["schema.yaml"],
-    wrapper:
-        f"{manager.wrappers}/wrappers/rulegraph"
+    run:
+        manager.get_run("rulegraph/run", "v1")(input, output, params)
 
 
 rule dot2svg:
@@ -548,7 +616,7 @@ rule dot2svg:
     container:
         config['apptainers']['graphviz']
     shell:
-        """dot -Tsvg {input} -o {output}"""
+        manager.get_shell("graphviz/dot2svg", "v1")
 
 
 
@@ -599,8 +667,8 @@ rule multiqc:
         "multiqc/multiqc.log",
     container:
         config["apptainers"]["multiqc"]
-    wrapper:
-        f"{manager.wrappers}/wrappers/multiqc"
+    shell:
+        manager.get_shell("multiqc/run", "v1")
 
 
 # these rules don't need to be submit on a node.
@@ -608,9 +676,9 @@ localrules: rulegraph
 
 
 onsuccess:
+    import base64
+    import glob
     import os
-    import shutil
-    import json
     import pandas as pd
 
     from sequana.utils.datatables_js import DataTable
@@ -620,97 +688,144 @@ onsuccess:
 
     logger.setLevel("INFO")
 
-    # ================================== main HTML report
-    # Must be created first because we share the conf and its sections
     manager.clean_multiqc("multiqc/multiqc_report.html")
-    intro = """<h2>Overview</h2>
-            This pipeline builds denovo assemblies on a set of samples. Individual reports are available
-            as well as a <a href="multiqc/multiqc_report.html">multiqc report</a>."""
 
-    intro += "<h2>Individual Reports</h2>"
+    # Metrics for the main summary table (always present in quast output)
+    SUMMARY_FIELDS = [
+        ("# contigs", "# contigs"),
+        ("Total length", "Total length (bp)"),
+        ("Largest contig", "Largest contig (bp)"),
+        ("N50", "N50"),
+        ("GC (%)", "GC (%)"),
+    ]
+    # Extra metrics shown only in per-sample reports (may be absent)
+    EXTRA_FIELDS = [
+        ("Avg. coverage depth", "Avg. coverage depth"),
+        ("Mapped (%)", "Mapped (%)"),
+    ]
+    ALL_FIELDS = SUMMARY_FIELDS + EXTRA_FIELDS
 
-    # add summary table
-    df = pd.DataFrame({"name": sorted(manager.samples)})
-    N50s = []
-    Ncontigs = []
-    for filename in sorted(manager.samples):
-        data = open(f"{filename}/quast/report.txt", "r")
-        for line in data.readlines():
-            if (
-                line.startswith(r"# contigs")
-                and ">=" not in line
-                and "Largest" not in line
-            ):
-                Ncontigs.append(line.split()[2].strip())
-            elif line.startswith("N50"):
-                N50s.append(line.split()[1].strip())
+    def _parse_quast(report_txt):
+        metrics = {col: "N/A" for _, col in ALL_FIELDS}
+        with open(report_txt) as fh:
+            for line in fh:
+                line = line.rstrip()
+                if line.startswith("# contigs") and ">=" not in line and "Largest" not in line:
+                    metrics["# contigs"] = line.split()[-1]
+                elif line.startswith("Largest contig"):
+                    metrics["Largest contig (bp)"] = line.split()[-1]
+                elif line.startswith("Total length") and ">=" not in line:
+                    metrics["Total length (bp)"] = line.split()[-1]
+                elif line.startswith("N50"):
+                    metrics["N50"] = line.split()[-1]
+                elif line.startswith("GC (%)"):
+                    metrics["GC (%)"] = line.split()[-1]
+                elif line.startswith("Avg. coverage depth"):
+                    metrics["Avg. coverage depth"] = line.split()[-1]
+                elif line.startswith("Mapped (%)"):
+                    metrics["Mapped (%)"] = line.split()[-1]
+        return metrics
 
-    df["N50"] = N50s
-    df["Ncontig"] = Ncontigs
-    df["links"] = [f"{x}/summary.html" for x in df["name"]]
-    dt = DataTable(df, "stats")
+    def _coverage_images_b64(sample):
+        """Return list of (contig_name, base64_png) for all sequana_coverage PNGs."""
+        images = []
+        for png in sorted(glob.glob(f"{sample}/sequana_coverage/*/coverage.png")):
+            contig = os.path.basename(os.path.dirname(png))
+            with open(png, "rb") as fh:
+                images.append((contig, base64.b64encode(fh.read()).decode("utf-8")))
+        return images
+
+    assembler = config["assembler"]
+    nsamples = len(manager.samples)
+
+    # ── main summary table ──────────────────────────────────────────────────────
+    rows = []
+    for sample in sorted(manager.samples):
+        report_txt = f"{sample}/quast/report.txt"
+        row = {"Sample": sample, "links": f"{sample}/summary.html"}
+        metrics = _parse_quast(report_txt) if os.path.exists(report_txt) else {col: "N/A" for _, col in ALL_FIELDS}
+        row.update({col: metrics[col] for _, col in SUMMARY_FIELDS})
+        rows.append(row)
+
+    cols = ["Sample"] + [col for _, col in SUMMARY_FIELDS] + ["links"]
+    df = pd.DataFrame(rows)[cols]
+    dt = DataTable(df, "assembly_stats", index=False)
     dt.datatable.datatable_options = {
-        "pageLength": len(manager.samples),
-        "dom": "Bfrtip",
+        "paging": "false",
         "buttons": ["copy", "csv"],
+        "bSort": "true",
+        "dom": "BRSPfrti",
     }
-    dt.datatable.set_links_to_column("links", "name")
-    intro += dt.create_javascript_function() + dt.create_datatable()
+    dt.datatable.set_links_to_column("links", "Sample")
+    js = dt.create_javascript_function()
+    htmltable = dt.create_datatable()
 
-
+    contents = """<h2>General information</h2>
+<p>This pipeline assembled <b>{nsamples}</b> sample(s) using <b>{assembler}</b>.
+Assembly quality metrics from <a href="https://quast.sourceforge.net">QUAST</a> are shown below.
+A full <a href="multiqc/multiqc_report.html">MultiQC report</a> is also available.
+Individual per-sample reports are accessible by clicking the sample name.</p>
+<hr>
+<h2>Assembly statistics</h2>
+{js}{htmltable}
+""".format(nsamples=nsamples, assembler=assembler, js=js, htmltable=htmltable)
 
     conf.output_dir = os.path.abspath(".")
-
     data = manager.getmetadata()
-    s = SequanaReport(data, intro=intro, workflow=False)
+    SequanaReport(data, intro=contents)
 
-    # create summary pipeline for each samples
-    report_dir_format = "{sample}"
-    for proj in manager.samples.keys():
-        conf.output_dir = proj
-        filename = os.sep.join([proj, "summary", "data.json"])
+    # ── per-sample individual reports ───────────────────────────────────────────
+    for sample in manager.samples:
+        conf.output_dir = os.path.abspath(sample)
+        conf.summary_sections = []
 
-        # ad sub section for variant calling
-        if manager.config.freebayes.do:
-            conf.summary_sections.append(
-                {
-                    "name": "Variant analysis",
-                    "anchor": "variant",
-                    "content": f'To get information about variants found in your sample, please visit the <a href="variant_calling.html">variant</a> page.',
-                }
-            )
+        # Quast stats
+        report_txt = f"{sample}/quast/report.txt"
+        if os.path.exists(report_txt):
+            metrics = _parse_quast(report_txt)
+            rows_s = [{"Metric": col, "Value": metrics[col]} for _, col in ALL_FIELDS]
+            df_s = pd.DataFrame(rows_s)
+            dt_s = DataTable(df_s, f"quast_{sample}", index=False)
+            dt_s.datatable.datatable_options = {"paging": "false", "dom": "t"}
+            quast_html = dt_s.create_javascript_function() + dt_s.create_datatable()
+        else:
+            quast_html = "<p>No QUAST report found.</p>"
 
-        # Variant calling
+        sample_intro = f"""<p><a href="../summary.html">&larr; Back to main report</a></p>
+<h2>Sample: {sample}</h2>
+<h3>Assembly statistics (QUAST)</h3>
+<p>Full QUAST report: <a href="quast/report.html">quast/report.html</a> &mdash;
+<a href="quast/icarus.html">Icarus browser</a></p>
+{quast_html}"""
+
+        # Coverage plots
         if manager.config.sequana_coverage.do:
-            conf.summary_sections.append(
-                {
-                    "name": "sequana coverage",
-                    "anchor": "sequana_coverage",
-                    "content": f'The contigs are checked for coverage and reports are available in the <a href="sequana_coverage/sequana_coverage.html">coverage/</a> page.',
-                }
-            )
+            images = _coverage_images_b64(sample)
+            if images:
+                sample_intro += "<h3>Coverage per contig</h3>"
+                for contig, b64 in images:
+                    sample_intro += (
+                        f'<h4>{contig}</h4>'
+                        f'<img src="data:image/png;base64,{b64}" style="max-width:100%;" />'
+                    )
+            sample_intro += f'<p>Full coverage report: <a href="sequana_coverage/sequana_coverage.html">sequana_coverage.html</a></p>'
 
-        # Prokka section
+        # Optional analyses
+        links = []
         if manager.config.prokka.do:
-            conf.summary_sections.append(
-                {
-                    "name": "Prokka",
-                    "anchor": "prokka",
-                    "content": f'Prokka results can be found in <a href="prokka/">prokka/</a> directory where you can find GFF, genbank and other related file ready to use.',
-                }
-            )
+            links.append('<a href="prokka/">Prokka annotation</a> (GFF, GenBank)')
+        if manager.config.freebayes.do:
+            links.append('<a href="vcf_filter/">Variant calls</a>')
+        if manager.config.busco.do:
+            links.append('<a href="busco/">BUSCO completeness</a>')
+        if manager.config.blast.do:
+            links.append('<a href="blast/">BLAST results</a>')
+        if links:
+            sample_intro += "<h3>Additional analyses</h3><ul>" + "".join(f"<li>{l}</li>" for l in links) + "</ul>"
 
-        # quast
-        conf.summary_sections.append(
-            {
-                "name": "Quast",
-                "anchor": "quast",
-                "content": f'The quality assessements can also be investigated using the quast <a href="quast/icarus.html"> reports </a>.',
-            }
-        )
-
-
-        SequanaReport(json.loads(open(filename).read()))
+        conf.summary_sections = []
+        sample_data = manager.getmetadata()
+        SequanaReport(sample_data, intro=sample_intro, workflow=False)
 
     shell("chmod -R g+w .")
     manager.teardown()
