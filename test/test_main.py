@@ -1,50 +1,64 @@
 import os
 import subprocess
-import sys
 import tempfile
 
-import easydev
+import pytest
 from click.testing import CliRunner
 
 from sequana_pipelines.denovo.main import main
 
 from . import test_dir
 
-sharedir = test_dir + "/data"
+input_dir = os.sep.join((test_dir, "data"))
 
 
-def test_standalone_subprocess(tmpdir):
-    cmd = f"""sequana_denovo --input-directory {sharedir}
-          --working-directory {tmpdir} --force"""
-    subprocess.call(cmd.split())
+def test_standalone_subprocess():
+    directory = tempfile.TemporaryDirectory()
+    cmd = ["sequana_denovo", "--input-directory", input_dir, "--working-directory", directory.name, "--force"]
+    subprocess.call(cmd)
 
 
 def test_standalone_script():
     directory = tempfile.TemporaryDirectory()
-
     runner = CliRunner()
-    results = runner.invoke(main, ["--input-directory", sharedir, "--working-directory", directory.name, "--force"])
+    results = runner.invoke(
+        main,
+        ["--input-directory", input_dir, "--working-directory", directory.name, "--force"],
+    )
     assert results.exit_code == 0
 
 
-# does not work on CI because we need to install a bunch of tools.
-# will be tested by the apptainer workflow anyway
-def _test_full(tmpdir):
+def test_standalone_script_skip_prokka():
+    directory = tempfile.TemporaryDirectory()
+    runner = CliRunner()
+    results = runner.invoke(
+        main,
+        [
+            "--input-directory", input_dir,
+            "--working-directory", directory.name,
+            "--force",
+            "--skip-prokka",
+        ],
+    )
+    assert results.exit_code == 0
 
-    wk = tmpdir
 
-    cmd = "sequana_denovo --input-directory {} "
-    cmd += "--working-directory {}  --force "
-    cmd += " --digital-normalisation-max-memory-usage 1e9"
-    cmd += " --skip-prokka"
-    cmd = cmd.format(sharedir, wk)
-    subprocess.call(cmd.split())
-
-    stat = subprocess.call("sh denovo.sh".split(), cwd=wk)
-
-    assert os.path.exists(wk + "/summary.html")
+def test_standalone_script_with_assembler_options():
+    directory = tempfile.TemporaryDirectory()
+    runner = CliRunner()
+    results = runner.invoke(
+        main,
+        [
+            "--input-directory", input_dir,
+            "--working-directory", directory.name,
+            "--force",
+            "--spades-memory", "32",
+            "--digital-normalisation-max-memory-usage", "1e9",
+        ],
+    )
+    assert results.exit_code == 0
 
 
 def test_version():
-    cmd = "sequana_denovo --version"
-    subprocess.call(cmd.split())
+    cmd = ["sequana_denovo", "--version"]
+    subprocess.call(cmd)

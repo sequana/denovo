@@ -17,7 +17,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        python: [3.8, '3.10']
+        python: ['3.10']
       fail-fast: false
 
 
@@ -36,24 +36,23 @@ jobs:
         sudo apt install -y apptainer
 
     - name: checkout git repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python 3.X
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
 
     - name: Install dependencies
       run: |
-        pip install .[testing]
+        pip install "snakemake>=8" .[testing]
 
     - name: install package itself
       run: |
          pip install .
-         pip install "pulp==2.7.0" --no-deps
 
     - name: testing
       run: |
-        sequana_denovo --input-directory test/data/ --use-apptainer  && cd denovo && sh denovo.sh
+        sequana_denovo --input-directory test/data/ --apptainer-prefix ~/images  && cd denovo && bash denovo.sh
 
 

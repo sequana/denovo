@@ -8,123 +8,172 @@
 .. image:: https://coveralls.io/repos/github/sequana/denovo/badge.svg?branch=main
     :target: https://coveralls.io/github/sequana/denovo?branch=main
 
-.. image:: https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C3.10-blue.svg
+.. image:: https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg
     :target: https://pypi.python.org/pypi/sequana
-    :alt: Python 3.8 | 3.9 | 3.10
+    :alt: Python 3.10 | 3.11 | 3.12
 
 .. image:: http://joss.theoj.org/papers/10.21105/joss.00352/status.svg
    :target: http://joss.theoj.org/papers/10.21105/joss.00352
    :alt: JOSS (journal of open source software) DOI
 
-This is is the **denovo** pipeline from the `Sequana <https://sequana.readthedocs.org>`_ projet
+This is the **denovo** pipeline from the `Sequana <https://sequana.readthedocs.org>`_ project.
 
-
-:Overview: a de-novo assembly pipeline for short-read sequencing data
-:Input: A set of FastQ files
-:Output: Fasta, VCF, HTML report
-:Status: production
-:Citation: Cokelaer et al, (2017), ‘Sequana’: a Set of Snakemake NGS pipelines, Journal of Open Source Software, 2(16), 352, JOSS DOI doi:10.21105/joss.00352
+:Overview: De-novo assembly pipeline for short-read Illumina data (bacterial genomes)
+:Input: A set of paired or single-end FastQ files
+:Output: Assembled FASTA contigs, annotation (GFF/GenBank), variant calls (VCF), HTML reports
+:Status: Production
+:Documentation: This README and https://sequana.readthedocs.io
+:Citation: Cokelaer et al, (2017), 'Sequana': a Set of Snakemake NGS pipelines, Journal of Open Source Software, 2(16), 352, https://doi.org/10.21105/joss.00352
 
 
 Installation
 ~~~~~~~~~~~~
 
-**sequana_denovo** is based on Python3, just install the package as follows::
+If you already have all requirements, install the package with pip::
 
-    pip install sequana --upgrade
+    pip install sequana_denovo --upgrade
 
-You will need third-party software such as fastqc. Please see below for details.
+You will need third-party tools (spades, prokka, quast, etc.). Install all dependencies at once::
+
+    mamba env create -f environment.yml
+
 
 Usage
 ~~~~~
 
-The following command will scan all files ending in .fastq.gz found in the local
-directory, create a directory called denovo/ where a snakemake pipeline is
-stored. Depending on the number of files and their sizes, the
-process may be long::
+Scan FastQ files in a directory and set up the pipeline (replace ``DATAPATH`` with your input directory)::
 
-::
-
-    sequana_denovo --help
     sequana_denovo --input-directory DATAPATH
 
-This creates a directory with the pipeline and configuration file. You will then need
-to execute the pipeline::
+To skip Prokka annotation::
+
+    sequana_denovo --input-directory DATAPATH --skip-prokka
+
+To tune SPAdes memory (default 64 Gb) and digital normalisation::
+
+    sequana_denovo --input-directory DATAPATH --spades-memory 32 --digital-normalisation-max-memory-usage 1e9
+
+This creates a ``denovo/`` directory with the pipeline and configuration file. Execute the pipeline locally::
 
     cd denovo
-    sh denovo.sh  # for a local run
+    sh denovo.sh
 
-This launch a snakemake pipeline. If you are familiar with snakemake, you can
-retrieve the pipeline itself and its configuration files and then execute the pipeline yourself with specific parameters::
+If you are familiar with Snakemake, you can also run the pipeline directly::
 
-    snakemake -s denovo.smk -c config.yaml --cores 4 --stats stats.txt
+    snakemake -s denovo.rules --cores 4 --stats stats.txt
 
-Or use `sequanix <https://sequana.readthedocs.io/en/main/sequanix.html>`_ interface.
+See ``.sequana/profile/config.yaml`` to tune Snakemake behaviour (cores, cluster settings, etc.).
+
+
+Usage with apptainer
+~~~~~~~~~~~~~~~~~~~~~
+
+With apptainer, initiate the working directory as follows::
+
+    sequana_denovo --input-directory DATAPATH --use-apptainer
+
+Images are downloaded in the working directory. To store them in a shared location::
+
+    sequana_denovo --input-directory DATAPATH --use-apptainer --apptainer-prefix ~/.sequana/apptainers
+
+Then run as usual::
+
+    cd denovo
+    sh denovo.sh
+
 
 Requirements
 ~~~~~~~~~~~~
 
-This pipelines requires the following executable(s):
+This pipeline requires the following executables (install via bioconda/conda):
 
-- spades
-- busco
-- bwa
-- khmer : there is not executable called kmher but a set of executables (.e.g .normalize-by-median.py)
-- freebayes
-- picard
-- prokka
-- quast
-- spades
-- sambamba
-- samtools
+- **spades** or **unicycler** — de-novo assembler (``--assembler`` option)
+- **khmer** — digital normalisation (normalize-by-median.py, filter-abund.py, etc.)
+- **quast** — assembly quality assessment
+- **prokka** — genome annotation (optional, ``--skip-prokka``)
+- **busco** — assembly completeness assessment (optional)
+- **checkm-genome** — genome completeness and contamination (optional)
+- **bwa** + **sambamba** — read mapping back to assembly
+- **freebayes** — variant calling
+- **samtools** — BAM/SAM processing
+- **seqkit** — contig filtering by length
+- **blast** — taxonomic identification of contigs (optional)
+- **multiqc** — aggregated HTML report
+- **graphviz** — pipeline DAG image
 
 
-
-.. image:: https://raw.githubusercontent.com/sequana/sequana_denovo/main/sequana_pipelines/denovo/dag.png
+.. image:: https://raw.githubusercontent.com/sequana/denovo/main/sequana_pipelines/denovo/dag.svg
 
 
 Details
 ~~~~~~~~~
 
+This Snakemake pipeline assembles bacterial (or other small) genomes from short Illumina reads.
 
-Snakemake *de-novo* assembly pipeline dedicates to small genome like bacteria.
-It is based on `SPAdes <http://cab.spbu.ru/software/spades/>`_.
-The assembler corrects reads and then assemble them using different size of kmer.
-If the correct option is set, SPAdes corrects mismatches and short INDELs in
-the contigs using BWA.
+**Digital normalisation** (khmer): optionally reduces sequencing depth to a target coverage
+level, discarding redundant reads. This lowers memory usage and speeds up assembly without
+significantly impacting quality.
 
-The sequencing depth can be normalised with `khmer <https://github.com/dib-lab/khmer>`_.
-Digital normalisation converts the existing high coverage regions into a Gaussian
-distributions centered around a lower sequencing depth. To put it another way,
-genome regions covered at 200x will be covered at 20x after normalisation. Thus,
-some reads from high coverage regions are discarded to reduce the quantity of data.
-Although the coverage is drastically reduce, the assembly will be as good or better
-than assembling the unnormalised data. Furthermore, SPAdes with normalised data
-is notably speeder and cost less memory than without digital normalisation.
-Above all, khmer does this in fixed, low memory and without any reference
-sequence needed.
+**Assembly**: SPAdes (default) or Unicycler. SPAdes uses multiple k-mer sizes and is
+recommended for most bacterial genomes. Unicycler is designed for hybrid or circular assemblies.
 
-The pipeline assess the assembly with several tools and approach. The first one
-is `Quast <http://quast.sourceforge.net/>`_, a tools for genome assemblies
-evaluation and comparison. It provides a HTML report with useful metrics like
-N50, number of mismatch and so on. Furthermore, it creates a viewer of contigs
-called `Icarus <http://quast.sourceforge.net/icarus.html>`_.
+**Quality assessment** (QUAST): reports assembly statistics (N50, # contigs, total length, GC%,
+coverage depth) with an interactive Icarus contig browser.
 
-The second approach is to characterise coverage with sequana coverage and
-to detect mismatchs and short INDELs with
-`Freebayes <https://github.com/ekg/freebayes>`_.
+**Annotation** (Prokka): rapid prokaryotic genome annotation producing GFF, GenBank, and
+other standard formats.
 
-The last approach but not the least is `BUSCO <http://busco.ezlab.org/>`_, that
-provides quantitative measures for the assessment of genome assembly based on
-expectations of gene content from near-universal single-copy orthologs selected
-from `OrthoDB <http://www.orthodb.org/>`_.
+**Coverage analysis** (sequana_coverage): reads are mapped back to the assembly with BWA,
+duplicates flagged with Sambamba, and per-contig coverage profiles computed and visualised.
 
+**Variant calling** (Freebayes): detects SNPs and small indels between the assembled
+consensus and the mapped reads.
+
+**Completeness** (BUSCO / CheckM): optionally assess assembly completeness against
+conserved single-copy orthologs (BUSCO) or lineage-specific marker genes (CheckM).
+
+**Taxonomic identification** (BLAST): optionally BLASTs the top contigs against the nt
+database to identify their taxonomy.
+
+A summary HTML report (``summary.html``) with per-sample assembly statistics and embedded
+coverage plots is generated at the end of the run, alongside a MultiQC report.
+
+
+Rules and configuration details
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See the `latest documented configuration file <https://raw.githubusercontent.com/sequana/denovo/main/sequana_pipelines/denovo/config.yaml>`_
+for all available parameters.
+
+
+Changelog
+~~~~~~~~~
 
 ========= ====================================================================
 Version   Description
 ========= ====================================================================
-0.11.1    * Fix missing resources for quast/prokka/bwa_index
-0.11.0    * add checkm
+0.11.0    * Drop Python 3.8/3.9; require Python >=3.10
+          * Drop click-completion dependency
+          * Replace pkg_resources with importlib.metadata in __init__.py
+          * Add exclude_pattern to config and schema
+          * Fix digital_normalisation: use khmer:2.1.1 container from damona
+            (zenodo record 13924243) instead of generic sequana_tools image
+          * Fix digital_normalisation rule: convert run: to shell: for
+            apptainer compatibility (container: + run: disallowed)
+          * Fix spades, prokka, unicycler rules: add named input.fastq /
+            input.assembly for wrapper compatibility
+          * Fix bwa_index: add options param; bwa: drop tmp_directory,
+            add options/resources params; new bwa/align v2 shell that
+            separates bwa mem and sambamba sort into distinct steps
+          * Fix sambamba_markdup/sambamba_filter: add missing params/resources
+          * Fix samtools_depth: add named input.bam and options param
+          * Fix prokka output: .gff instead of .gbk (matches wrapper)
+          * Improved HTML report: per-sample summary.html with quast stats
+            table and embedded coverage plots; main table links to per-sample
+            reports; workflow=False on individual reports
+          * Update environment.yml: add khmer, python>=3.10
+          * Update tools.txt: add khmer scripts, graphviz
+          * add checkm
 0.10.0    * use click / include multiqc apptainer
 0.9.0     * Major refactoring to include apptainers, use wrappers
 0.8.5     * add multiqc and use newest version of sequana
@@ -134,3 +183,11 @@ Version   Description
 0.8.1
 0.8.0     **First release.**
 ========= ====================================================================
+
+
+Contribute & Code of Conduct
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To contribute to this project, please take a look at the
+`Contributing Guidelines <https://github.com/sequana/sequana/blob/main/CONTRIBUTING.rst>`_ first. Please note that this project is released with a
+`Code of Conduct <https://github.com/sequana/sequana/blob/main/CONDUCT.md>`_. By contributing to this project, you agree to abide by its terms.

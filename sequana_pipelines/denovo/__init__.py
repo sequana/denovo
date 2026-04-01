@@ -1,6 +1,6 @@
-import pkg_resources
+from importlib.metadata import version, PackageNotFoundError
 
 try:
-    version = pkg_resources.require("sequana_fastqc")[0].version
-except:
-    version = ">=0.8.0"
+    version = version("sequana-denovo")
+except PackageNotFoundError:
+    version = "unknown"
