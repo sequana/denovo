@@ -45,7 +45,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install "snakemake>=8" .[testing]
+        pip install "snakemake>=8" .[testing] sequana_wrappers
 
     - name: install package itself
       run: |
