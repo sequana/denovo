@@ -8,7 +8,7 @@ version = "0.12.0"
 description = "Multi-sample denovo assembly of FastQ sequences (short read)"
 authors = ["Sequana Team"]
 license = "BSD-3"
-repository = "https://github.com/sequana/demultiple"
+repository = "https://github.com/sequana/denovo"
 readme = "README.rst"
 keywords = ["NGS", "Illumina", "Sequana", "assembly", "denovo"]
 classifiers = [
@@ -34,8 +34,12 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-sequana = ">=0.15.0"
-sequana_pipetools = ">=0.16.1"
+sequana = ">=0.18.0"
+sequana_pipetools = ">=1.5.4"
+sequana-wrappers = ">=26.3.19"
+click-completion = "^0.5.2"
+snakemake = ">=7.32"
+pulp = ">=2.8"
 
 
 [tool.poetry.scripts]
@@ -44,8 +48,16 @@ sequana_denovo="sequana_pipelines.denovo.main:main"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
-pytest = "^7.4.0"
+pytest = "^8.0.0"
 mock = "^5.1.0"
 pytest-mock = "^3.11.1"
 pytest-cov = "^4.1.0"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::pytest.PytestDeprecationWarning",
+    "ignore::DeprecationWarning:click_completion",
+    "ignore::DeprecationWarning:importlib",
+]
+asyncio_mode = "auto"
 
