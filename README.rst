@@ -8,9 +8,9 @@
 .. image:: https://coveralls.io/repos/github/sequana/denovo/badge.svg?branch=main
     :target: https://coveralls.io/github/sequana/denovo?branch=main
 
-.. image:: https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg
+.. image:: https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg
     :target: https://pypi.python.org/pypi/sequana
-    :alt: Python 3.10 | 3.11 | 3.12
+    :alt: Python 3.11 | 3.12
 
 .. image:: http://joss.theoj.org/papers/10.21105/joss.00352/status.svg
    :target: http://joss.theoj.org/papers/10.21105/joss.00352
